@@ -1,0 +1,130 @@
+/* ===========================================================
+   Nền tảng: reset, biến màu/phông, animation dùng chung.
+   Giá trị mặc định lấy đúng theo file Figma "Wedding"
+   (node 1:2 bìa thiệp, node 1:41 trang nội dung).
+   Các biến --c-* / --page-w được ghi đè theo cấu hình trong /admin.
+   =========================================================== */
+
+:root {
+  --c-primary: #511419;        /* đỏ đô của panel + chữ tiêu đề */
+  --c-primary-dark: #3b0e12;
+  --c-accent: #b58b2f;         /* vàng đồng */
+  --c-bg: #f8f1e5;             /* nền cột giấy kem — màu Figma 1:44 sau lớp vân giấy 1:45 */
+  --c-surface: #ece4d8;        /* chữ/nền sáng trên panel đỏ */
+  --c-text: #511419;
+  --c-muted: #7d5a56;
+
+  --c-outer: #ffffff;
+  --page-w: 900px;             /* bề rộng cột giấy (Figma: 900) */
+  --panel-w: 560px;            /* bề rộng panel đỏ (Figma: 560) */
+
+  --f-heading: 'Playfair Display', serif;
+  --f-script: 'The Nautigal', cursive;
+  --f-body: 'Inter', 'Be Vietnam Pro', sans-serif;
+  --f-display: 'Viaoda Libre', serif;   /* tên đôi ở đầu trang */
+  --f-serif: 'EB Garamond', serif;      /* tên đôi trong panel đỏ */
+
+  /* ảnh trang trí xuất từ Figma */
+  --img-castle: url('/figma/castle.png');
+  --img-flower: url('/figma/flower.png');
+  --img-paper: url('/figma/paper-texture.png');
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+/* scrollbar-gutter: chừa sẵn rãnh thanh cuộn ngay từ lúc còn khoá cuộn ở màn
+   bìa. Không có nó, khi mở thiệp thanh cuộn hiện ra làm viewport hẹp đi ~15px
+   -> cột giấy 900px và mọi khối bên trong reflow -> giật một cái. */
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Khoá cuộn khi còn ở màn bìa. Đặt trên <html> bằng class thay vì gán inline
+   style cho <body> để không xoá mất overflow-x: hidden bên dưới. */
+html.is-scroll-locked,
+html.is-scroll-locked body { overflow: hidden; }
+
+body {
+  margin: 0;
+  font-family: var(--f-body);
+  font-weight: 300;
+  color: var(--c-text);
+  background: var(--c-outer);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+
+h1, h2, h3 {
+  font-family: var(--f-heading);
+  font-weight: 400;
+  line-height: 1.25;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+p { margin: 0; }
+
+/* ------------------------------ Scroll reveal ----------------------------- */
+
+.reveal {
+  opacity: 0;
+  transition-property: opacity, transform, filter;
+  transition-duration: var(--reveal-duration, 900ms);
+  transition-delay: var(--reveal-delay, 0ms);
+  transition-timing-function: cubic-bezier(0.22, 0.68, 0.24, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-up { transform: translateY(34px); }
+.reveal-down { transform: translateY(-34px); }
+.reveal-left { transform: translateX(-40px); }
+.reveal-right { transform: translateX(40px); }
+.reveal-zoom { transform: scale(0.92); }
+.reveal-blur { filter: blur(9px); transform: translateY(18px); }
+.reveal-fade { transform: none; }
+
+.reveal.is-shown { opacity: 1; transform: none; filter: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .envelope, .cal-day.is-target::before, .cal-mark, .couple-heart,
+  .cover-btn-ping, .music-btn .eq span, .gift-envelope,
+  .deco-flower, .envelope-flower { animation: none !important; }
+}
+
+/* ------------------------------ Trạng thái trang -------------------------- */
+
+.page-state {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--c-muted);
+  padding: 24px;
+  background: var(--c-bg);
+}
+
+.page-state-sub { font-size: 0.82rem; opacity: 0.75; }
+
+.loader {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(81, 20, 25, 0.2);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

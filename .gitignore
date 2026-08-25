@@ -1,0 +1,9 @@
+node_modules
+dist
+server/uploads/*
+!server/uploads/.gitkeep
+server/data/*.json
+.env
+.figma-ref
+server/data/*.bak
+.mcp.json
