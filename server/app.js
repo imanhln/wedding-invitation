@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultContent, DEFAULT_MUSIC_URL } from './defaultContent.js';
 import { issueToken, verifyToken } from './session.js';
+import { injectMeta, fallbackHtml } from './shareMeta.js';
 import {
   SITE_ID,
   useBlob,
@@ -349,15 +350,66 @@ app.post(
 );
 
 /* ---------------------- Serve built client (production) ------------------ */
-/* Trên Vercel phần này không chạy: file tĩnh do CDN của Vercel phục vụ.     */
+/* File tĩnh (js/css/ảnh) vẫn do CDN của Vercel phục vụ; rewrite chỉ đẩy sang đây
+   những đường dẫn không trùng file nào, tức là các trang HTML. Trang HTML phải
+   đi qua đây để được chèn sẵn thẻ og:* — xem shareMeta.js.                    */
 
-if (fs.existsSync(CLIENT_DIST)) {
-  app.use(express.static(CLIENT_DIST));
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) return next();
-    res.sendFile(path.join(CLIENT_DIST, 'index.html'));
-  });
+// index: false để "/" không bị express.static trả index.html thô, bỏ qua bước
+// chèn thẻ meta ở dưới.
+if (fs.existsSync(CLIENT_DIST)) app.use(express.static(CLIENT_DIST, { index: false }));
+
+const baseUrl = (req) => {
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const proto = req.headers['x-forwarded-proto']?.split(',')[0] || (req.secure ? 'https' : 'http');
+  return `${proto}://${host}`;
+};
+
+// Khung HTML không đổi giữa các request nên đọc một lần rồi giữ lại.
+let shellCache = '';
+
+/**
+ * Lấy index.html đã build. Chạy máy cá nhân thì đọc từ đĩa; trên Vercel thì
+ * client/dist không nằm trong bundle của serverless function nên tải qua
+ * /index.html — đường dẫn đó trùng một file tĩnh thật nên không bị rewrite
+ * ngược về đây (không có vòng lặp).
+ */
+async function loadShell(req) {
+  if (shellCache) return shellCache;
+  const local = path.join(CLIENT_DIST, 'index.html');
+  if (fs.existsSync(local)) return (shellCache = fs.readFileSync(local, 'utf8'));
+  try {
+    const res = await fetch(`${baseUrl(req)}/index.html`);
+    const html = res.ok ? await res.text() : '';
+    if (html.includes('id="root"')) return (shellCache = html);
+    console.error('[shell] /index.html tra ve khong hop le:', res.status);
+  } catch (err) {
+    console.error('[shell]', err.message);
+  }
+  return '';
 }
+
+app.get(
+  '*',
+  wrap(async (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+
+    const base = baseUrl(req);
+    const pageUrl = `${base}${req.originalUrl}`;
+    const search = req.originalUrl.slice(req.path.length);
+    const content = await getContent();
+    const shell = await loadShell(req);
+
+    // CDN giữ HTML 60s để không phải gọi function mỗi lượt xem. Nội dung thiệp
+    // vẫn lấy từ /api/content nên sửa trong trang quản trị hiện ra ngay; chỉ
+    // riêng thẻ chia sẻ là chậm tối đa 60s.
+    res.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
+    res.type('html').send(
+      shell
+        ? injectMeta(shell, content, base, pageUrl)
+        : fallbackHtml(content, base, pageUrl, search)
+    );
+  })
+);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
