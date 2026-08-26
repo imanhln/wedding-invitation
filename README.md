@@ -177,6 +177,11 @@ Hai section không phải khối riêng trên thiệp mà chỉ là cấu hình 
 cuối panel "Thông tin tiệc cưới": `map` (nút "Mở bản đồ", mở Google Maps ở tab mới)
 và `rsvp` (nút "Xác nhận tham dự"). Tắt công tắc của chúng là ẩn nút tương ứng.
 
+Form RSVP hỏi thêm **điểm đón xe**: danh sách điểm đón đặt trong /admin (mỗi
+điểm gắn với nhà gái / nhà trai / cả hai), ô chọn luôn hiện trong form và lọc
+lại theo bên khách vừa chọn. Hạn phản hồi tách riêng thành ô ngày `deadline`,
+tự ghép vào sau câu ghi chú nên đổi hạn không phải sửa lại câu chữ.
+
 Ba section không có trong Figma, mặc định tắt (bật trong /admin nếu cần):
 `thanks`, `couple`, `story`.
 
