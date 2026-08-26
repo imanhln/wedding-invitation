@@ -16,8 +16,21 @@ const slug = (v, fallback) =>
 
 export const SITE_ID = slug(process.env.SITE_ID, 'default');
 
-const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';
+// Khi Connect Blob store, Vercel dat ten bien theo store — noi nhieu store hoac
+// dat prefix rieng thi ten khong con la BLOB_READ_WRITE_TOKEN. Quet ca cac bien
+// *READ_WRITE_TOKEN de khong phu thuoc vao dung mot cai ten.
+const BLOB_TOKEN =
+  process.env.BLOB_READ_WRITE_TOKEN ||
+  Object.entries(process.env).find(([k, v]) => k.endsWith('READ_WRITE_TOKEN') && v)?.[1] ||
+  '';
 export const useBlob = Boolean(BLOB_TOKEN);
+
+// Tren Vercel filesystem chi doc, ghi xuong dia se nem ENOENT kho hieu. Chan
+// truoc bang thong bao noi dung phai lam gi.
+const ON_VERCEL = Boolean(process.env.VERCEL);
+const NO_BLOB_MSG =
+  'Chua noi Blob store vao project. Vao Vercel > Storage > Connect wedding-blob roi Redeploy.';
+if (ON_VERCEL && !useBlob) console.error('[store]', NO_BLOB_MSG);
 
 // Ảnh nằm ở đường dẫn đoán được (phải công khai để hiển thị trên thiệp),
 // còn file JSON chứa danh sách khách + lời chúc thì giấu sau một thư mục băm
@@ -99,6 +112,7 @@ function fsRead(name, fallback) {
 }
 
 function fsWrite(name, value) {
+  if (ON_VERCEL) throw new Error(NO_BLOB_MSG);
   const file = path.join(DATA_DIR, `${name}.json`);
   const tmp = `${file}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf8');
@@ -131,6 +145,7 @@ export function safeName(originalname) {
 export async function saveUpload(file) {
   const name = safeName(file.originalname);
   if (!useBlob) {
+    if (ON_VERCEL) throw new Error(NO_BLOB_MSG);
     fs.writeFileSync(path.join(UPLOAD_DIR, name), file.buffer);
     return { name, url: `/uploads/${name}`, size: file.size, type: file.mimetype };
   }
@@ -147,6 +162,7 @@ export async function saveUpload(file) {
 
 export async function listUploads(allowed) {
   if (!useBlob) {
+    if (ON_VERCEL) return [];
     return fs
       .readdirSync(UPLOAD_DIR)
       .filter((f) => allowed.test(f))
