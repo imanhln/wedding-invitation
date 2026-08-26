@@ -61,37 +61,37 @@ export default function WishesSection({ data }) {
 
   return (
     <section className="block block-wishes" id={data.id}>
-      <img className="wish-note" src="/figma/papernote.png" alt="" aria-hidden="true" />
+      <div className="wish-paper">
+        <BlockTitle title={data.title} subtitle={data.subtitle} />
 
-      <BlockTitle title={data.title} subtitle={data.subtitle} />
+        <Reveal anim="up" className="wish-form-wrap">
+          <form className="wish-form" onSubmit={submit}>
+            <input
+              className="line-input"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Nhập tên*"
+              required
+            />
 
-      <Reveal anim="up" className="wish-form-wrap">
-        <form className="wish-form" onSubmit={submit}>
-          <input
-            className="line-input"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Nhập tên*"
-            required
-          />
+            <textarea
+              value={form.message}
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
+              placeholder={data.placeholder || 'Nhập lời chúc*'}
+              required
+            />
 
-          <textarea
-            value={form.message}
-            onChange={(e) => setForm({ ...form, message: e.target.value })}
-            placeholder={data.placeholder || 'Nhập lời chúc*'}
-            required
-          />
+            <div className="wish-form-row">
+              <button type="button" className="wish-magic" onClick={suggest} title="Gợi ý lời chúc">🪄</button>
+              <button className="wish-send" disabled={state === 'sending'}>
+                {state === 'sending' ? 'Đang gửi...' : state === 'done' ? 'Đã gửi' : data.buttonText || 'Gửi lời chúc'}
+              </button>
+            </div>
 
-          <div className="wish-form-row">
-            <button type="button" className="wish-magic" onClick={suggest} title="Gợi ý lời chúc">🪄</button>
-            <button className="wish-send" disabled={state === 'sending'}>
-              {state === 'sending' ? 'Đang gửi...' : state === 'done' ? 'Đã gửi' : data.buttonText || 'Gửi lời chúc'}
-            </button>
-          </div>
-
-          {error && <p className="form-error">{error}</p>}
-        </form>
-      </Reveal>
+            {error && <p className="form-error">{error}</p>}
+          </form>
+        </Reveal>
+      </div>
 
       {data.showList && wishes.length > 0 && (
         <div className="wish-list">

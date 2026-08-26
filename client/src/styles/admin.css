@@ -503,3 +503,15 @@
   .a-preview { position: static; }
   .a-preview-frame { height: 70vh; }
 }
+
+/* Xem thêm ghi chú ở invitation.css: cỡ chữ ô nhập dưới 16px làm Safari trên
+   iPhone tự phóng to cả trang khi bấm vào ô. */
+@media (pointer: coarse) {
+  .a-field input,
+  .a-field select,
+  .a-field textarea,
+  .a-media-url,
+  .a-color-row input[type='text'] {
+    font-size: 16px;
+  }
+}

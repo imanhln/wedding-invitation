@@ -1,7 +1,6 @@
 import OpeningSection from './OpeningSection.jsx';
 import InvitationSection from './InvitationSection.jsx';
 import CalendarSection from './CalendarSection.jsx';
-import MapSection from './MapSection.jsx';
 import GallerySection from './GallerySection.jsx';
 import EventsSection from './EventsSection.jsx';
 import WishesSection from './WishesSection.jsx';
@@ -15,7 +14,6 @@ export const SECTION_COMPONENTS = {
   opening: OpeningSection,
   invitation: InvitationSection,
   calendar: CalendarSection,
-  map: MapSection,
   gallery: GallerySection,
   events: EventsSection,
   wishes: WishesSection,
@@ -34,7 +32,7 @@ export const SECTION_LABELS = {
   opening: 'Mở đầu (phong thư + tên đôi)',
   invitation: 'Thông tin lễ cưới (panel đỏ)',
   calendar: 'Thông tin tiệc cưới + lịch tháng',
-  map: 'Bản đồ Google Maps',
+  map: 'Bản đồ (nút trong panel tiệc cưới)',
   gallery: 'Album ảnh (coverflow)',
   events: 'Lịch trình ngày cưới',
   rsvp: 'Xác nhận tham dự (nút trong panel tiệc cưới)',

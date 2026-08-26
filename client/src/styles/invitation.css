@@ -292,7 +292,6 @@
 
 .deco-castle.is-hero  { top: 226px; }                            /* 1:47  1527w */
 .deco-castle.is-album { width: 88%;   left: 5.2%; top: -40px; }  /* 1:86  1347w */
-.deco-castle.is-map   { width: 92.7%; left: 3.6%; top: -5px; }   /* 1:182 1419w */
 .deco-castle.is-gift  { width: 90.9%; left: 4.5%; top: 0; }      /* 1:323 1392w */
 
 /* ====== Tiêu đề khối — Figma "Heading 2": Inter 700 20/30, chữ hoa ====== */
@@ -411,7 +410,12 @@
   animation-delay: var(--float-delay, 0s);
 }
 
-.deco-flower.is-right     { width: 201px; right: -100px; top: -12px; --float-dur: 6.5s; }
+/* Nhánh hoa của panel "Thông tin lễ cưới": hạ xuống giữa panel cho khỏi đè lên
+   hai cột "Ông Bà", và cho xuống dưới lớp chữ (z-index 0 < 1 của .panel > *)
+   để ở vị trí mới nó cũng không che mất chữ. Căn giữa bằng `translate` chứ
+   không bằng keyframe, vì base.css tắt animation khi khách bật "giảm chuyển
+   động" — transform trong keyframe sẽ mất, còn translate thì vẫn giữ. */
+.deco-flower.is-right     { width: 201px; right: -100px; top: 50%; translate: 0 -50%; z-index: 0; --float-dur: 6.5s; }
 .deco-flower.is-left      { width: 161px; left: -81px;   top: 141px; --float-dur: 7.4s; --float-delay: -1.8s; }
 .deco-flower.is-right-low { width: 151px; right: -81px;  top: 4px;   --float-dur: 6.9s; --float-delay: -3.2s; }
 
@@ -724,6 +728,15 @@
 
 .panel-address { margin-top: 10px; font-size: 12px; line-height: 20px; color: rgba(236, 228, 216, 0.72); }
 
+/* Địa chỉ nhà trai/nhà gái đi liền ngay dưới dòng nơi cử hành */
+.panel-venue-address {
+  margin-top: 8px;
+  font-size: clamp(12px, 3vw, 14px);
+  line-height: 22px;
+  color: rgba(236, 228, 216, 0.62);
+  white-space: pre-line;
+}
+
 /* "Kính mời: <tên khách>" — cùng cỡ với dòng âm lịch .panel-lunar ngay trên nó,
    chỉ khác ở độ đậm và độ sáng để tên khách nổi lên. */
 .panel-guest {
@@ -881,43 +894,6 @@
   transform: translateY(-2px);
   box-shadow: 0 12px 24px -10px rgba(87, 55, 18, 0.8);
 }
-
-/* ================================ BẢN ĐỒ ===============================
-   Figma 1:183 — tiêu đề + địa chỉ + iframe 560x380 bo góc 15.          */
-
-.block-map { padding: 35px 20px 32px; }
-
-.map-name {
-  font-family: var(--f-body);
-  font-weight: 700;
-  font-size: 15.4px;
-  line-height: 24px;
-  text-transform: uppercase;
-  color: var(--c-primary);
-}
-
-.map-address {
-  margin: 10px auto 0;
-  max-width: 430px;
-  font-size: 12.5px;
-  line-height: 22.75px;
-  font-weight: 300;
-  color: rgba(81, 20, 25, 0.8);
-}
-
-.map-wrap {
-  width: min(560px, 100%);
-  margin: 22px auto 0;
-  aspect-ratio: 560 / 380;
-  border-radius: 15px;
-  overflow: hidden;
-  background: #e5e3df;
-  box-shadow: 0 16px 34px -20px rgba(59, 14, 18, 0.5);
-}
-
-.map-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
-.map-empty { display: grid; place-items: center; height: 100%; padding: 20px; font-size: 12.5px; color: var(--c-muted); }
-.map-actions { margin-top: 18px; }
 
 /* ================================ ALBUM ================================
    Figma: coverflow 3D — ảnh giữa 319x478, hai bên nghiêng nhỏ dần.     */
@@ -1208,29 +1184,51 @@
 /* =============================== LƯU BÚT ===============================
    Figma 1:270 — giấy note phía sau, form 380x252, thẻ lời chúc 577x85. */
 
-.block-wishes { position: relative; padding-top: 140px; }
+.block-wishes { position: relative; padding-bottom: 72px; }
 
-.wish-note {
-  position: absolute;
-  left: 50%;
-  top: -30px;
-  width: 650px;
-  max-width: 108%;
-  transform: translateX(-50%);
-  z-index: 0;
-  pointer-events: none;
-  user-select: none;
+/* Tờ giấy note vẫn là papernote.png (đúng nhánh hoa gốc ở góc dưới-trái),
+   nhưng vẽ bằng border-image thay vì <img> đặt absolute. Ảnh bị cắt thành 9 ô:
+   4 góc giữ nguyên kích thước gốc — nên nhánh hoa 154x158 và 4 góc bo của tờ
+   giấy không bao giờ méo — còn 4 cạnh + ruột giấy (vân giấy phẳng) thì co giãn.
+   Nhờ vậy tờ giấy luôn ôm đúng nội dung ở mọi bề rộng, hết lỗi tràn ở mobile.
+
+   Số đo trên ảnh 658x600: tờ giấy x 93..565, y 105..504; nhánh hoa x 40..193,
+   y 387..544. Slice 150/130/220/200 (trên/phải/dưới/trái) bọc trọn nhánh hoa
+   trong ô góc dưới-trái, phần ruột còn lại 328x230 > 0. */
+.wish-paper {
+  position: relative;
+  /* Bề ngang bám đúng .panel của các khối khác (kể cả khi đổi panelWidth
+     trong /admin), căn giữa như nhau. Nhánh hoa tràn ra ngoài thì để nó bị
+     .invitation (overflow:hidden) cắt ở rìa trang. */
+  width: min(var(--panel-w), 100%);
+  margin: 0 auto;
+  /* Đo profile nhánh hoa theo từng hàng pixel: cách đáy giấy 64px hoa chỉ còn
+     vươn tới 38px tính từ mép giấy — tức nằm trong padding-left 44px, nên nút
+     🪄 không bao giờ bị che dù tờ giấy rộng hẹp bao nhiêu. Lấy 68px cho dư. */
+  padding: 40px 44px 68px;
 }
 
-.block-wishes > *:not(.wish-note) { position: relative; z-index: 1; }
+.wish-paper::before {
+  content: '';
+  position: absolute;
+  /* Kéo hộp ra ngoài đúng bằng phần lề trong suốt của ảnh, để mép tờ giấy
+     trong ảnh trùng khít với hộp .wish-paper. */
+  inset: -105px -93px -96px -93px;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 150px 130px 220px 200px;
+  border-image: url('/figma/papernote.png') 150 130 220 200 fill stretch;
+  z-index: 0;
+  pointer-events: none;
+}
 
-.wish-form-wrap { margin-top: 12px; }
+.wish-paper > * { position: relative; z-index: 1; }
+
+.wish-form-wrap { margin-top: 4px; }
 
 .wish-form {
   width: min(380px, 100%);
   margin: 0 auto;
-  padding: 16px;
-  border-radius: 8px;
   display: grid;
   gap: 16px;
 }
@@ -1261,17 +1259,18 @@
 .wish-magic {
   width: 38px;
   height: 32px;
-  border: 0;
+  border: 1px solid rgba(81, 20, 25, 0.18);
   border-radius: 8px;
-  background: rgba(81, 20, 25, 0.1);
+  background: rgba(255, 255, 255, 0.55);
   color: var(--c-primary);
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
+  box-shadow: 0 2px 8px -4px rgba(81, 20, 25, 0.5);
   transition: background 0.3s ease;
 }
 
-.wish-magic:hover { background: rgba(81, 20, 25, 0.2); }
+.wish-magic:hover { background: #fff; }
 
 .wish-send {
   min-width: 149px;
@@ -1297,7 +1296,7 @@
   display: grid;
   gap: 12px;
   width: min(577px, 100%);
-  margin: 110px auto 0;
+  margin: 84px auto 0;
   text-align: left;
 }
 
@@ -1743,7 +1742,7 @@
   .envelope-wrap { --env: 0.72; }
   .opening-names { margin-top: 24px; }
 
-  .deco-flower.is-right { width: 135px; right: -62px; top: -8px; }
+  .deco-flower.is-right { width: 135px; right: -62px; }
   .deco-flower.is-left { width: 108px; left: -50px; top: 96px; }
   .deco-flower.is-right-low { width: 101px; right: -50px; top: 3px; }
   .deco-castle.is-hero { top: 150px; }
@@ -1770,9 +1769,20 @@
   .tl-left { gap: 10px; }
   .tl-row + .tl-row .tl-dot::before { top: -40px; height: 48px; }
 
-  .block-wishes { padding-top: 92px; }
-  .wish-note { top: -18px; width: 118%; }
-  .wish-list { margin-top: 60px; }
+  /* Mobile: tờ giấy vẫn full bề ngang như .panel, chỉ thu ảnh giấy còn 66%
+     (border-image co theo border-width, lề trong suốt nhân 0.66 tương ứng) cho
+     nhánh hoa nhỏ lại vừa vặn. Hoa thò ra trái 35px, bị .invitation cắt ~21px
+     ở rìa màn — chấp nhận, đổi lấy form rộng đúng bằng các form khác.
+     padding-bottom 76px: ở độ cao đó hoa chỉ vươn tới 18px từ mép giấy, vừa
+     lọt bên trái nút 🪄. */
+  .block-wishes { padding-bottom: 48px; }
+  .wish-paper { padding: 30px 18px 76px; }
+  .wish-paper::before {
+    inset: -69px -61px -63px -61px;
+    border-width: 99px 86px 145px 132px;
+  }
+  .wish-form { width: 100%; }
+  .wish-list { margin-top: 56px; }
 
   .music-btn { right: 14px; bottom: 14px; }
 }
@@ -1860,3 +1870,18 @@
 
 .modal-body { padding: 20px 18px 24px; }
 .modal-lead { margin-bottom: 16px; font-size: 12.5px; line-height: 20px; color: var(--c-muted); text-align: center; }
+
+/* ---------------------- Không cho iOS phóng to khi gõ ---------------------
+   Safari trên iPhone tự zoom cả trang khi con trỏ nhảy vào ô nhập có cỡ chữ
+   dưới 16px (modal RSVP đang để 12.5px) — zoom xong không tự thu lại, nhìn
+   như modal bị phóng to. Chỉ cần cỡ chữ >= 16px là Safari thôi zoom, nên trên
+   máy cảm ứng ta nâng cỡ chữ ô nhập lên 16px; bản desktop giữ nguyên.        */
+@media (pointer: coarse) {
+  .field input,
+  .field select,
+  .field textarea,
+  .wish-form .line-input,
+  .wish-form textarea {
+    font-size: 16px;
+  }
+}

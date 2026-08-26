@@ -1,6 +1,10 @@
 // Nội dung mặc định của thiệp — lấy đúng theo file Figma "Wedding"
 // (node 1:2 bìa thiệp, node 1:41 trang nội dung).
 // Toàn bộ dữ liệu này chỉnh được trong trang /admin.
+
+// Bài hát phát khi trang quản trị chưa chọn nhạc riêng.
+export const DEFAULT_MUSIC_URL = "https://www.youtube.com/watch?v=dElRVQFqj-k";
+
 export const defaultContent = {
   meta: {
     title: "Thiệp cưới Nguyên Anh & Hồng Thúy",
@@ -32,8 +36,8 @@ export const defaultContent = {
   },
 
   effects: {
-    petals: false,
-    petalsDensity: 14,
+    petals: true,
+    petalsDensity: 2,
     revealAnimation: true,
     parallax: true,
     grain: false,
@@ -41,7 +45,8 @@ export const defaultContent = {
 
   music: {
     enabled: true,
-    url: "",
+    // Chưa chọn bài trong trang quản trị thì thiệp phát bài này.
+    url: DEFAULT_MUSIC_URL,
     volume: 0.6,
     autoPlayOnOpen: true,
   },
@@ -105,11 +110,13 @@ export const defaultContent = {
       groomSideLabel: "Ông Bà",
       brideSideLabel: "Ông Bà",
       middleNote: "Trân trọng báo tin\nlễ thành hôn của con chúng tôi",
-      venueLine: "Lễ thành hôn được cử hành tại\nTư gia",
+      venueLine: "Lễ thành hôn được cử hành tại",
+      venuePlace: "Tư gia",
+      venueSide: "nhà trai",
       eventDate: "2026-09-20",
       eventTime: "13:00",
       lunarLine: "(Tức ngày 10 tháng 8 âm lịch)",
-      addressLine: "",
+      addressLine: "Xã Thiệu Trung, Tỉnh Thanh Hóa",
       footNote: "",
     },
     {
@@ -118,6 +125,8 @@ export const defaultContent = {
       enabled: true,
       title: "Album Ảnh",
       subtitle: "",
+      autoPlay: true,
+      autoPlayDelay: 4, // giây giữa hai lần tự chuyển ảnh
       photos: [
         { id: "p1", url: "/figma/demo-1.jpg", caption: "" },
         { id: "p2", url: "/figma/demo-cover.jpg", caption: "" },
@@ -138,7 +147,6 @@ export const defaultContent = {
       showCountdown: false,
       showCalendar: true,
       markDate: "2026-09-20",
-      calendarLinkText: "Thêm vào lịch",
     },
 
     /* Không phải một phần riêng trên thiệp: cấu hình cho nút + modal
@@ -151,25 +159,35 @@ export const defaultContent = {
       buttonText: "Xác nhận tham dự",
       modalTitle: "Xác nhận tham dự",
       subtitle: "Bạn có thể đến chung vui cùng chúng mình chứ?",
-      note: "Vui lòng phản hồi trước ngày 10.09.2026",
+      // `note` chỉ là phần chữ; ngày hạn lấy từ `deadline` (đặt trong trang
+      // quản trị) rồi ghép vào sau, nên đổi hạn không phải sửa lại câu chữ.
+      note: "Vui lòng phản hồi trước ngày",
+      deadline: "2026-09-10",
       askAttendance: true,
       askGuestCount: true,
       askSide: true,
+      // Chọn "khách của cô dâu / chú rể" xong thì hiện thêm ô chọn điểm đón.
+      askPickup: true,
+      pickupLabel: "Điểm đón xe",
+      pickupPoints: [
+        { id: "pk1", side: "Cô dâu", label: "Nhà gái - Thiệu Trung, Thanh Hoá" },
+        { id: "pk2", side: "Chú rể", label: "Nhà trai - Thiệu Trung, Thanh Hoá" },
+        { id: "pk3", side: "Cả hai", label: "Tự di chuyển tới nhà hàng" },
+      ],
       thankYouText:
         "Cảm ơn bạn rất nhiều! Hẹn gặp bạn trong ngày vui của chúng mình.",
     },
+    /* Không phải một phần riêng trên thiệp: bản đồ không còn hiển thị trong
+       trang, chỉ còn nút "Mở bản đồ" trong panel tiệc cưới (mở Google Maps ở
+       tab mới). enabled = bật/tắt nút đó. */
     {
       id: "map",
       type: "map",
       enabled: true,
-      title: "Tiệc cưới sẽ tổ chức tại",
-      subtitle: "",
+      buttonText: "Mở bản đồ",
       // Toạ độ 19°52'34.5"N 105°41'03.4"E (Plus Code VMGM+GP3) đổi sang thập
       // phân. Ghim theo toạ độ vì tra theo tên "Thieu Trung" chỉ ra được tâm xã.
-      embedUrl: "19.87625,105.684278",
-      directionUrl: "19.87625,105.684278",
-      showDirection: false,
-      placeName: "Thieu Trung, Thanh Hoa",
+      mapUrl: "19.87625,105.684278",
       address: "Thieu Trung, Thanh Hoa, Vietnam",
     },
     {

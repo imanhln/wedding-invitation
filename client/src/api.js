@@ -42,11 +42,47 @@ export const deleteWish = (id) => request(`/api/admin/wishes/${id}`, { method: '
 export const importData = (payload) => request('/api/admin/import', { method: 'POST', body: payload, auth: true });
 
 export async function uploadFiles(fileList) {
+  const files = await Promise.all([...fileList].map(shrinkImage));
   const form = new FormData();
-  [...fileList].forEach((f) => form.append('files', f));
+  files.forEach((f) => form.append('files', f));
   return request('/api/admin/upload', { method: 'POST', body: form, auth: true, raw: true });
 }
 
 export function exportUrl() {
   return `/api/admin/export?token=${encodeURIComponent(getToken())}`;
+}
+
+/* ------------------------- Thu nhỏ ảnh trước khi tải ---------------------- */
+// Vercel chặn request nặng hơn 4.5 MB, mà ảnh chụp bằng điện thoại thường 5-12 MB.
+// Thu nhỏ ngay trong trình duyệt vừa vượt được giới hạn đó, vừa làm thiệp nhẹ hơn
+// khi khách mở bằng 3G. Ảnh nhỏ sẵn thì giữ nguyên, không đụng vào.
+
+const MAX_DIM = 2000;
+const SKIP_UNDER = 400 * 1024;
+
+async function shrinkImage(file) {
+  if (!/^image\/(jpeg|jpg|png|webp)$/i.test(file.type) || file.size <= SKIP_UNDER) return file;
+
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return file; // trình duyệt không đọc được thì cứ tải nguyên bản
+  }
+
+  const scale = Math.min(1, MAX_DIM / Math.max(bitmap.width, bitmap.height));
+  const w = Math.round(bitmap.width * scale);
+  const h = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+  bitmap.close?.();
+
+  const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.85));
+  if (!blob || blob.size >= file.size) return file;
+
+  const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+  return new File([blob], name, { type: 'image/jpeg' });
 }

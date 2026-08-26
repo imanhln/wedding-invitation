@@ -1,0 +1,6 @@
+# Dữ liệu chỉ dùng khi chạy máy cá nhân — trên Vercel mọi thứ nằm ở Blob store.
+server/data
+server/uploads
+.figma-ref
+node_modules
+client/node_modules

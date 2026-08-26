@@ -7,3 +7,5 @@ server/data/*.json
 .figma-ref
 server/data/*.bak
 .mcp.json
+.vercel
+server/data/_snapshot/

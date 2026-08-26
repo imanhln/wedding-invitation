@@ -12,6 +12,9 @@ export default function InvitationSection({ data, content }) {
   const { groom, bride } = content.couple;
   const parts = splitDate(data.eventDate);
 
+  // "Tư gia" + "nhà trai" -> "Tư gia nhà trai" (bỏ trống bên nào thì mất bên đó)
+  const venuePlace = [data.venuePlace, data.venueSide].filter(Boolean).join(' ').trim();
+
   return (
     <section className="block block-invitation" id={data.id}>
       <Reveal anim="up" className="panel" duration={1000}>
@@ -52,7 +55,17 @@ export default function InvitationSection({ data, content }) {
           <span />
         </div>
 
-        {data.venueLine && <p className="panel-venue">{data.venueLine}</p>}
+        {/* "Lễ thành hôn được cử hành tại" / "Tư gia nhà trai" / địa chỉ —
+            cả ba dòng đều sửa được trong trang quản trị. */}
+        {(data.venueLine || venuePlace) && (
+          <p className="panel-venue">
+            {data.venueLine}
+            {data.venueLine && venuePlace && <br />}
+            {venuePlace}
+          </p>
+        )}
+
+        {data.addressLine && <p className="panel-venue-address">{data.addressLine}</p>}
 
         {(data.eventTime || parts) && (
           <div className="panel-timerow">
@@ -76,7 +89,6 @@ export default function InvitationSection({ data, content }) {
         )}
 
         {data.lunarLine && <p className="panel-lunar">{data.lunarLine}</p>}
-        {data.addressLine && <p className="panel-address">{data.addressLine}</p>}
 
         {guest && (
           <p className="panel-guest">Kính mời: <b>{guest}</b></p>

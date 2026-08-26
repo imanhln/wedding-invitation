@@ -87,7 +87,9 @@ export default function Petals({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    const targetCount = () => Math.max(6, Math.round((density * w) / 420));
+    /* Mật độ tính trên bề rộng 420px; sàn là 1 để mức "2" trong trang quản trị
+       thật sự chỉ thả lác đác vài trái tim. */
+    const targetCount = () => Math.max(1, Math.round((density * w) / 420));
 
     /* Resize chỉ đo lại và bù/bớt số tim — KHÔNG tạo lại cả đàn.
        Trên mobile, thanh địa chỉ ẩn/hiện khi cuộn là một chuỗi resize liên tục. */

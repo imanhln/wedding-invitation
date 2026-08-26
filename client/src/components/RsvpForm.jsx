@@ -1,11 +1,24 @@
 import { useState } from 'react';
 import { sendRsvp } from '../api.js';
-import { guestFromUrl } from '../utils.js';
+import { guestFromUrl, formatShortDate } from '../utils.js';
+
+const SIDES = ['Chú rể', 'Cô dâu', 'Cả hai'];
+
+/**
+ * Điểm đón hợp lệ với bên khách vừa chọn: điểm đặt "Cả hai" luôn hiện, khách
+ * chọn "Cả hai" (hoặc chưa chọn bên nào) thì thấy hết. Điểm không tên thì bỏ.
+ */
+function pickupsFor(points, side) {
+  return (points || []).filter(
+    (p) => p?.label && (!side || !p.side || p.side === 'Cả hai' || side === 'Cả hai' || p.side === side)
+  );
+}
 
 /**
  * Form xác nhận tham dự — hiển thị trong modal mở từ panel thông tin
  * tiệc cưới (CalendarSection).
- * `data`: { askAttendance, askGuestCount, askSide, note, thankYouText }
+ * `data`: { askAttendance, askGuestCount, askSide, askPickup, pickupLabel,
+ *           pickupPoints, note, deadline, thankYouText }
  */
 export default function RsvpForm({ data = {} }) {
   const [form, setForm] = useState({
@@ -13,6 +26,7 @@ export default function RsvpForm({ data = {} }) {
     attending: 'yes',
     guests: 1,
     side: '',
+    pickup: '',
     message: ''
   });
   const [state, setState] = useState('idle'); // idle | sending | done | error
@@ -20,12 +34,26 @@ export default function RsvpForm({ data = {} }) {
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
+  // Ô điểm đón luôn hiện; đổi bên khách thì lọc lại danh sách, điểm đang chọn
+  // không còn hợp lệ nữa thì bỏ chọn.
+  const updateSide = (e) => {
+    const side = e.target.value;
+    const valid = pickupsFor(data.pickupPoints, side).some((p) => p.label === form.pickup);
+    setForm((f) => ({ ...f, side, pickup: valid ? f.pickup : '' }));
+  };
+
+  const pickups = pickupsFor(data.pickupPoints, form.side);
+  const showPickup = data.askPickup && pickups.length > 0;
+
+  // Ghi chú = câu chữ trong trang quản trị + hạn phản hồi đặt riêng bằng ô ngày
+  const note = [data.note, data.deadline && formatShortDate(data.deadline)].filter(Boolean).join(' ');
+
   const submit = async (e) => {
     e.preventDefault();
     setState('sending');
     setError('');
     try {
-      await sendRsvp({ ...form, attending: form.attending === 'yes' });
+      await sendRsvp({ ...form, attending: form.attending === 'yes', pickup: showPickup ? form.pickup : '' });
       setState('done');
     } catch (err) {
       setError(err.message);
@@ -75,11 +103,23 @@ export default function RsvpForm({ data = {} }) {
       {data.askSide && (
         <label className="field">
           <span>Bạn là khách của</span>
-          <select value={form.side} onChange={update('side')}>
+          <select value={form.side} onChange={updateSide}>
             <option value="">-- Chọn --</option>
-            <option value="Chú rể">Chú rể</option>
-            <option value="Cô dâu">Cô dâu</option>
-            <option value="Cả hai">Cả hai</option>
+            {SIDES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      {showPickup && (
+        <label className="field">
+          <span>{data.pickupLabel || 'Điểm đón xe'}</span>
+          <select value={form.pickup} onChange={update('pickup')}>
+            <option value="">-- Chọn điểm đón --</option>
+            {pickups.map((p) => (
+              <option key={p.id || p.label} value={p.label}>{p.label}</option>
+            ))}
           </select>
         </label>
       )}
@@ -89,7 +129,7 @@ export default function RsvpForm({ data = {} }) {
         <textarea rows="3" value={form.message} onChange={update('message')} placeholder="Chúc mừng hai bạn..." />
       </label>
 
-      {data.note && <p className="form-note">{data.note}</p>}
+      {note && <p className="form-note">{note}</p>}
       {error && <p className="form-error">{error}</p>}
 
       <button className="btn btn-primary btn-block" disabled={state === 'sending'}>

@@ -361,7 +361,7 @@ function MediaTab({ content, update }) {
 
       <Card title="Hiệu ứng" desc="Các hiệu ứng chuyển động trên thiệp.">
         <Toggle label="Trái tim rơi" value={content.effects.petals} onChange={(v) => setEffects({ petals: v })} />
-        <Range label="Mật độ trái tim" value={content.effects.petalsDensity ?? 18} min={4} max={50} onChange={(v) => setEffects({ petalsDensity: v })} />
+        <Range label="Mật độ trái tim" value={content.effects.petalsDensity ?? 2} min={1} max={50} onChange={(v) => setEffects({ petalsDensity: v })} />
         <Toggle label="Hiện dần khi cuộn (scroll reveal)" value={content.effects.revealAnimation} onChange={(v) => setEffects({ revealAnimation: v })} />
         <Toggle label="Hiệu ứng parallax cho ảnh lớn" value={content.effects.parallax} onChange={(v) => setEffects({ parallax: v })} />
       </Card>

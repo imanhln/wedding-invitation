@@ -91,13 +91,31 @@ export default function SectionEditor({ section, onChange }) {
             onChange={(v) => set({ middleNote: v })}
             hint="Mỗi dòng xuống hàng là một dòng trên thiệp"
           />
-          <TextArea
-            label="Nơi cử hành"
-            rows={2}
+          <Text
+            label="Dòng dẫn nơi cử hành"
             value={section.venueLine}
             onChange={(v) => set({ venueLine: v })}
-            hint="Ví dụ: Lễ thành hôn được cử hành tại / Tư gia"
+            placeholder="Lễ thành hôn được cử hành tại"
           />
+          <div className="a-row">
+            <Text
+              label="Nơi cử hành"
+              value={section.venuePlace}
+              onChange={(v) => set({ venuePlace: v })}
+              placeholder="Tư gia"
+            />
+            <Select
+              label="Bên nhà"
+              value={section.venueSide}
+              onChange={(v) => set({ venueSide: v })}
+              options={[
+                { value: "nhà trai", label: "Nhà trai" },
+                { value: "nhà gái", label: "Nhà gái" },
+                { value: "", label: "Không ghi" },
+              ]}
+              hint="Ghép sau ô bên trái: “Tư gia nhà trai”"
+            />
+          </div>
           <div className="a-row">
             <Text
               label="Ngày lễ thành hôn"
@@ -120,10 +138,11 @@ export default function SectionEditor({ section, onChange }) {
             placeholder="(Tức ngày 10 tháng 8 âm lịch)"
           />
           <TextArea
-            label="Địa chỉ (tuỳ chọn)"
+            label="Địa chỉ nơi cử hành"
             rows={2}
             value={section.addressLine}
             onChange={(v) => set({ addressLine: v })}
+            hint="Hiện ngay dưới dòng nơi cử hành. Để trống thì ẩn."
           />
           <Text
             label="Ghi chú dưới panel"
@@ -207,16 +226,10 @@ export default function SectionEditor({ section, onChange }) {
             onChange={(v) => set({ markDate: v })}
             hint="Để trống sẽ dùng ngày tiệc cưới ở trên"
           />
-          <Text
-            label="Chữ trên link lưu lịch"
-            value={section.calendarLinkText}
-            onChange={(v) => set({ calendarLinkText: v })}
-            placeholder="Thêm vào lịch"
-          />
-
           <p className="a-note">
-            Nút “Xác nhận tham dự” hiện ở cuối panel này — sửa nội dung ở phần
-            “Xác nhận tham dự (nút trong panel tiệc cưới)” bên dưới.
+            Cuối panel này có hai nút: “Mở bản đồ” (sửa ở phần “Bản đồ (nút
+            trong panel tiệc cưới)”) và “Xác nhận tham dự” (sửa ở phần “Xác nhận
+            tham dự (nút trong panel tiệc cưới)”).
           </p>
         </>
       );
@@ -251,12 +264,22 @@ export default function SectionEditor({ section, onChange }) {
             onChange={(v) => set({ subtitle: v })}
             placeholder="Bạn có thể đến chung vui cùng chúng mình chứ?"
           />
-          <Text
-            label="Ghi chú (hạn phản hồi)"
-            value={section.note}
-            onChange={(v) => set({ note: v })}
-            placeholder="Vui lòng phản hồi trước ngày 10.09.2026"
-          />
+          <div className="a-row">
+            <Text
+              label="Ghi chú (câu dẫn hạn phản hồi)"
+              value={section.note}
+              onChange={(v) => set({ note: v })}
+              placeholder="Vui lòng phản hồi trước ngày"
+              hint="Ngày ở ô bên cạnh sẽ tự ghép vào cuối câu này."
+            />
+            <Text
+              label="Hạn phản hồi"
+              type="date"
+              value={section.deadline}
+              onChange={(v) => set({ deadline: v })}
+              hint="Để trống thì chỉ hiện câu chữ, không kèm ngày."
+            />
+          </div>
           <TextArea
             label="Lời cảm ơn sau khi gửi"
             rows={2}
@@ -280,7 +303,51 @@ export default function SectionEditor({ section, onChange }) {
               value={section.askSide}
               onChange={(v) => set({ askSide: v })}
             />
+            <Toggle
+              label="Hỏi điểm đón xe"
+              value={section.askPickup}
+              onChange={(v) => set({ askPickup: v })}
+              hint="Ô chọn điểm đón hiện sẵn trong form; chọn bên khách xong thì danh sách lọc lại theo bên đó."
+            />
           </div>
+
+          {section.askPickup && (
+            <>
+              <Text
+                label="Nhãn ô chọn điểm đón"
+                value={section.pickupLabel}
+                onChange={(v) => set({ pickupLabel: v })}
+                placeholder="Điểm đón xe"
+              />
+              <ListEditor
+                items={section.pickupPoints}
+                onChange={(pickupPoints) => set({ pickupPoints })}
+                addLabel="Thêm điểm đón"
+                titleOf={(it, i) => it.label || `Điểm đón ${i + 1}`}
+                newItem={() => ({ id: uid(), side: "Cả hai", label: "" })}
+                renderItem={(item, upd) => (
+                  <div className="a-row">
+                    <Text
+                      label="Tên điểm đón"
+                      value={item.label}
+                      onChange={(v) => upd({ label: v })}
+                      placeholder="Nhà gái - Thiệu Trung, Thanh Hoá"
+                    />
+                    <Select
+                      label="Hiện với khách của"
+                      value={item.side}
+                      onChange={(v) => upd({ side: v })}
+                      options={[
+                        { value: "Cả hai", label: "Cả hai bên" },
+                        { value: "Cô dâu", label: "Cô dâu" },
+                        { value: "Chú rể", label: "Chú rể" },
+                      ]}
+                    />
+                  </div>
+                )}
+              />
+            </>
+          )}
         </>
       );
 
@@ -288,41 +355,30 @@ export default function SectionEditor({ section, onChange }) {
     case "map":
       return (
         <>
+          <p className="a-note">
+            Bản đồ không còn nhúng trong trang. Phần này cấu hình nút “Mở bản
+            đồ” ở cuối panel thông tin tiệc cưới — bấm vào là mở Google Maps ở
+            tab mới. Công tắc ở trên bật/tắt chính cái nút đó.
+          </p>
           <Text
-            label="Tiêu đề"
-            value={section.title}
-            onChange={(v) => set({ title: v })}
-            placeholder="Tiệc cưới sẽ tổ chức tại"
+            label="Chữ trên nút"
+            value={section.buttonText}
+            onChange={(v) => set({ buttonText: v })}
+            placeholder="Mở bản đồ"
           />
-          <Text
-            label="Tên địa điểm"
-            value={section.placeName}
-            onChange={(v) => set({ placeName: v })}
+          <TextArea
+            label="Toạ độ hoặc link Google Maps"
+            rows={2}
+            value={section.mapUrl}
+            onChange={(v) => set({ mapUrl: v })}
+            hint="Chính xác nhất là dán toạ độ dạng 19.87625,105.684278. Cũng nhận link Google Maps bất kỳ. Để trống sẽ tra theo địa chỉ bên dưới. Nút chỉ mở Maps ghim sẵn vị trí, không tự bật chỉ đường."
           />
           <TextArea
             label="Địa chỉ"
             rows={2}
             value={section.address}
             onChange={(v) => set({ address: v })}
-            hint="Dòng chữ hiện dưới tiêu đề"
-          />
-          <TextArea
-            label="Link nhúng Google Maps"
-            rows={3}
-            value={section.embedUrl}
-            onChange={(v) => set({ embedUrl: v })}
-            hint="Dán toạ độ dạng 19.87625,105.684278 để ghim đúng điểm (chính xác nhất), hoặc Google Maps → Chia sẻ → Nhúng bản đồ → dán cả thẻ <iframe>/link. Để trống sẽ tự tra theo địa chỉ."
-          />
-          <Text
-            label="Link chỉ đường (tuỳ chọn)"
-            value={section.directionUrl}
-            onChange={(v) => set({ directionUrl: v })}
-          />
-          <Toggle
-            label="Hiện nút Mở chỉ đường"
-            value={section.showDirection}
-            onChange={(v) => set({ showDirection: v })}
-            hint="Bản Figma không có nút này"
+            hint="Dùng để tra bản đồ khi ô trên để trống"
           />
         </>
       );
@@ -652,6 +708,23 @@ function GalleryEditor({ section, set }) {
         Album hiển thị dạng <b>coverflow 3D</b> như bản Figma: ảnh giữa lớn, hai
         bên nghiêng nhỏ dần. Thứ tự ảnh bên dưới là thứ tự trượt.
       </p>
+
+      <Toggle
+        label="Tự động chạy album"
+        value={section.autoPlay !== false}
+        onChange={(v) => set({ autoPlay: v })}
+        hint="Dừng lại khi khách rê chuột lên album hoặc mở ảnh phóng to"
+      />
+      {section.autoPlay !== false && (
+        <Range
+          label="Thời gian mỗi ảnh"
+          value={section.autoPlayDelay ?? 4}
+          min={2}
+          max={12}
+          onChange={(v) => set({ autoPlayDelay: v })}
+          suffix="s"
+        />
+      )}
 
       <div className="a-field">
         <span className="a-label">Ảnh trong album ({photos.length})</span>

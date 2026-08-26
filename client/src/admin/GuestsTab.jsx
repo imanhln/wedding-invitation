@@ -23,12 +23,13 @@ export default function GuestsTab() {
 
   const exportCsv = () => {
     const rows = [
-      ['Tên', 'Tham dự', 'Số người', 'Khách của', 'Lời nhắn', 'Thời gian'],
+      ['Tên', 'Tham dự', 'Số người', 'Khách của', 'Điểm đón', 'Lời nhắn', 'Thời gian'],
       ...rsvp.map((r) => [
         r.name,
         r.attending ? 'Có' : 'Không',
         r.guests,
         r.side,
+        r.pickup || '',
         (r.message || '').replace(/[\r\n]+/g, ' '),
         new Date(r.createdAt).toLocaleString('vi-VN')
       ])
@@ -77,7 +78,7 @@ export default function GuestsTab() {
               <thead>
                 <tr>
                   <th>Tên</th><th>Tham dự</th><th>Số người</th><th>Khách của</th>
-                  <th>Lời nhắn</th><th>Thời gian</th><th />
+                  <th>Điểm đón</th><th>Lời nhắn</th><th>Thời gian</th><th />
                 </tr>
               </thead>
               <tbody>
@@ -87,6 +88,7 @@ export default function GuestsTab() {
                     <td><span className={`a-pill ${r.attending ? 'is-yes' : 'is-no'}`}>{r.attending ? 'Có' : 'Không'}</span></td>
                     <td>{r.guests}</td>
                     <td>{r.side}</td>
+                    <td>{r.pickup}</td>
                     <td className="a-td-msg">{r.message}</td>
                     <td>{new Date(r.createdAt).toLocaleString('vi-VN')}</td>
                     <td>
@@ -98,7 +100,7 @@ export default function GuestsTab() {
                     </td>
                   </tr>
                 ))}
-                {!rsvp.length && <tr><td colSpan={8} className="a-empty">Chưa có phản hồi nào.</td></tr>}
+                {!rsvp.length && <tr><td colSpan={9} className="a-empty">Chưa có phản hồi nào.</td></tr>}
               </tbody>
             </table>
           </div>

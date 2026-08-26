@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import Reveal from '../components/Reveal.jsx';
 import RsvpForm from '../components/RsvpForm.jsx';
 import { useCountdown } from '../hooks/useReveal.js';
-import { downloadIcs, splitDate } from '../utils.js';
+import { splitDate, toMapUrl } from '../utils.js';
 
 const DOW = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 const UNITS = [['days', 'Ngày'], ['hours', 'Giờ'], ['minutes', 'Phút'], ['seconds', 'Giây']];
@@ -25,12 +25,11 @@ function buildMonth(date) {
  * Thông tin tiệc cưới — Figma node 1:115 (panel đỏ 560x875):
  * tiêu đề, dòng dẫn, thứ + giờ, "19 | THÁNG 09 / 2026", âm lịch,
  * hai mốc đón khách / khai tiệc, lịch tháng nền kem có trái tim
- * đánh dấu ngày cưới, cuối cùng là link "Thêm vào lịch" và nút
- * "Xác nhận tham dự" mở modal chứa form RSVP.
+ * đánh dấu ngày cưới, cuối cùng là nút "Mở bản đồ" (mở Google Maps ở tab mới,
+ * thay cho link "Thêm vào lịch" của bản cũ) và nút "Xác nhận tham dự" mở modal
+ * chứa form RSVP.
  */
 export default function CalendarSection({ data, content }) {
-  const target = new Date(data.targetDate);
-  const valid = !Number.isNaN(target.getTime());
   const parts = splitDate(data.targetDate);
   const time = useCountdown(data.targetDate);
   const [rsvpOpen, setRsvpOpen] = useState(false);
@@ -38,6 +37,10 @@ export default function CalendarSection({ data, content }) {
   // Nút + modal xác nhận tham dự: cấu hình ở section 'rsvp' (một dòng riêng trong trang quản trị)
   const rsvp = (content.sections || []).find((s) => s.type === 'rsvp');
   const showRsvp = !!rsvp && rsvp.enabled !== false;
+
+  // Nút "Mở bản đồ": cấu hình ở section 'map' — bản đồ không còn nhúng trong trang
+  const map = (content.sections || []).find((s) => s.type === 'map');
+  const mapUrl = map && map.enabled !== false ? toMapUrl(map.mapUrl, map.address) : '';
 
   useEffect(() => {
     if (!rsvpOpen) return;
@@ -55,8 +58,6 @@ export default function CalendarSection({ data, content }) {
   const markValid = !Number.isNaN(marked.getTime());
   const { cells, month, year } = markValid ? buildMonth(marked) : { cells: [], month: 0, year: 0 };
 
-  const title = `Lễ cưới ${content.cover.groomName} & ${content.cover.brideName}`;
-  const dateOnly = (data.targetDate || '').slice(0, 10);
   const timeOnly = (data.targetDate || '').slice(11, 16) || '11:00';
 
   return (
@@ -131,14 +132,14 @@ export default function CalendarSection({ data, content }) {
           </div>
         )}
 
-        {valid && (
-          <button type="button" className="cal-link" onClick={() => downloadIcs({ title, date: dateOnly, time: timeOnly })}>
-            {data.calendarLinkText || 'Thêm vào lịch'}
+        {mapUrl && (
+          <a className="cal-link" href={mapUrl} target="_blank" rel="noreferrer">
+            {map.buttonText || 'Mở bản đồ'}
             {/* Figma 17:81 — mũi tên → nằm trong nút */}
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
               <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" />
             </svg>
-          </button>
+          </a>
         )}
 
         {showRsvp && (

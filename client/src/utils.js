@@ -41,75 +41,18 @@ export function parseCoords(raw) {
 }
 
 /**
- * Chuyển toạ độ / link Google Maps bất kỳ / địa chỉ thành link nhúng iframe.
+ * Toạ độ / link Google Maps / địa chỉ -> link mở Google Maps ở tab mới.
+ *
+ * Dùng dạng `maps/search` (ghim vị trí) chứ KHÔNG dùng `maps/dir` — dạng dir
+ * nhảy thẳng vào màn chỉ đường và đòi vị trí hiện tại của khách. Khách chỉ cần
+ * xem tiệc tổ chức ở đâu; muốn chỉ đường thì bấm nút Đường đi trong Maps.
  */
-export function toEmbedUrl(embedUrl, address) {
-  const raw = (embedUrl || '').trim();
-
-  // Toạ độ dán trực tiếp: zoom sâu hơn vì đã biết đúng điểm cần ghim
-  const coords = parseCoords(raw);
-  if (coords) return `https://maps.google.com/maps?q=${coords}&z=17&output=embed`;
-
-  if (raw) {
-    // Người dùng dán nguyên thẻ <iframe src="...">
-    const fromIframe = raw.match(/src=["']([^"']+)["']/i);
-    const url = fromIframe ? fromIframe[1] : raw;
-    if (/\/maps\/embed/.test(url)) return url;
-    if (/^https?:\/\//i.test(url)) return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
-  }
-  if (address) return `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=16&output=embed`;
+export function toMapUrl(mapUrl, address) {
+  const coords = parseCoords(mapUrl);
+  if (coords) return `https://www.google.com/maps/search/?api=1&query=${coords}`;
+  if (mapUrl) return mapUrl;
+  if (address) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
   return '';
-}
-
-export function toDirectionUrl(directionUrl, address) {
-  const coords = parseCoords(directionUrl);
-  if (coords) return `https://www.google.com/maps/dir/?api=1&destination=${coords}`;
-  if (directionUrl) return directionUrl;
-  if (address) return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-  return '';
-}
-
-/** Link thêm sự kiện vào Google Calendar. */
-export function googleCalendarUrl({ title, date, time = '10:00', address = '', details = '' }) {
-  const start = new Date(`${date}T${time.length === 5 ? time : '10:00'}:00`);
-  if (Number.isNaN(start.getTime())) return '';
-  const end = new Date(start.getTime() + 3 * 3600 * 1000);
-  const fmt = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: title,
-    dates: `${fmt(start)}/${fmt(end)}`,
-    location: address,
-    details
-  });
-  return `https://calendar.google.com/calendar/render?${params}`;
-}
-
-/** Tải file .ics để thêm vào lịch điện thoại. */
-export function downloadIcs({ title, date, time = '10:00', address = '', details = '' }) {
-  const start = new Date(`${date}T${time.length === 5 ? time : '10:00'}:00`);
-  if (Number.isNaN(start.getTime())) return;
-  const end = new Date(start.getTime() + 3 * 3600 * 1000);
-  const fmt = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
-  const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'BEGIN:VEVENT',
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
-    `SUMMARY:${title}`,
-    `LOCATION:${address}`,
-    `DESCRIPTION:${details}`,
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n');
-
-  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'wedding.ics';
-  a.click();
-  URL.revokeObjectURL(a.href);
 }
 
 export function copyText(text) {
