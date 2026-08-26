@@ -23,7 +23,17 @@ const BLOB_TOKEN =
   process.env.BLOB_READ_WRITE_TOKEN ||
   Object.entries(process.env).find(([k, v]) => k.endsWith('READ_WRITE_TOKEN') && v)?.[1] ||
   '';
-export const useBlob = Boolean(BLOB_TOKEN);
+
+// Vercel nay noi Blob store bang OIDC: khong bom bien token nua, thay bang
+// BLOB_STORE_ID co dinh + VERCEL_OIDC_TOKEN ngan han (runtime tu lam moi).
+// SDK v2 tu doc ca hai bien nay, nen chi can nhan biet la dang o che do do.
+const useOidc = Boolean(process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN);
+
+export const useBlob = Boolean(BLOB_TOKEN) || useOidc;
+
+// Truyen token rong se de len OIDC (token co uu tien cao hon), nen chi dua vao
+// khi thuc su co. Khong co thi de SDK tu lay OIDC tu process.env.
+const AUTH = BLOB_TOKEN ? { token: BLOB_TOKEN } : {};
 
 // Tren Vercel filesystem chi doc, ghi xuong dia se nem ENOENT kho hieu. Chan
 // truoc bang thong bao noi dung phai lam gi.
@@ -53,7 +63,7 @@ async function listAll(prefix) {
   const out = [];
   let cursor;
   do {
-    const page = await list({ prefix, cursor, limit: 1000, token: BLOB_TOKEN });
+    const page = await list({ prefix, cursor, limit: 1000, ...AUTH });
     out.push(...page.blobs);
     cursor = page.hasMore ? page.cursor : undefined;
   } while (cursor);
@@ -62,7 +72,7 @@ async function listAll(prefix) {
 
 async function blobRead(name, fallback) {
   const pathname = `${DATA_PREFIX}${name}.json`;
-  const { blobs } = await list({ prefix: pathname, limit: 100, token: BLOB_TOKEN });
+  const { blobs } = await list({ prefix: pathname, limit: 100, ...AUTH });
   const hit = blobs.find((b) => b.pathname === pathname);
   if (!hit) return structuredClone(fallback);
   try {
@@ -78,7 +88,7 @@ async function blobRead(name, fallback) {
 async function blobWrite(name, value) {
   await put(`${DATA_PREFIX}${name}.json`, JSON.stringify(value, null, 2), {
     access: 'public',
-    token: BLOB_TOKEN,
+    ...AUTH,
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
@@ -151,7 +161,7 @@ export async function saveUpload(file) {
   }
   const res = await put(`${UPLOAD_PREFIX}${name}`, file.buffer, {
     access: 'public',
-    token: BLOB_TOKEN,
+    ...AUTH,
     contentType: file.mimetype,
     addRandomSuffix: false,
     allowOverwrite: true,
@@ -192,7 +202,7 @@ export async function removeUpload(name) {
     return;
   }
   const pathname = `${UPLOAD_PREFIX}${safe}`;
-  const { blobs } = await list({ prefix: pathname, limit: 100, token: BLOB_TOKEN });
+  const { blobs } = await list({ prefix: pathname, limit: 100, ...AUTH });
   const hit = blobs.find((b) => b.pathname === pathname);
-  if (hit) await del(hit.url, { token: BLOB_TOKEN });
+  if (hit) await del(hit.url, { ...AUTH });
 }
