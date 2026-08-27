@@ -370,15 +370,20 @@ let shellCache = '';
 /**
  * Lấy index.html đã build. Chạy máy cá nhân thì đọc từ đĩa; trên Vercel thì
  * client/dist không nằm trong bundle của serverless function nên tải qua
- * /index.html — đường dẫn đó trùng một file tĩnh thật nên không bị rewrite
- * ngược về đây (không có vòng lặp).
+ * /index.html — đường dẫn đó trùng một file tĩnh thật nên bước `handle:
+ * filesystem` trong vercel.json phục vụ luôn, không quay lại đây.
+ *
+ * redirect: 'manual' là chốt an toàn: '/' giờ do chính function này phục vụ, nên
+ * nếu một ngày '/index.html' bị chuyển hướng về '/' (ví dụ bật cleanUrls) thì
+ * fetch đi theo sẽ thành vòng lặp vô tận. Gặp 3xx thì coi như thất bại và dùng
+ * fallbackHtml.
  */
 async function loadShell(req) {
   if (shellCache) return shellCache;
   const local = path.join(CLIENT_DIST, 'index.html');
   if (fs.existsSync(local)) return (shellCache = fs.readFileSync(local, 'utf8'));
   try {
-    const res = await fetch(`${baseUrl(req)}/index.html`);
+    const res = await fetch(`${baseUrl(req)}/index.html`, { redirect: 'manual' });
     const html = res.ok ? await res.text() : '';
     if (html.includes('id="root"')) return (shellCache = html);
     console.error('[shell] /index.html tra ve khong hop le:', res.status);

@@ -7,8 +7,10 @@
   "functions": {
     "api/index.js": { "maxDuration": 20 }
   },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
-    { "source": "/((?!api/).*)", "destination": "/api" }
+  "routes": [
+    { "src": "^/api(?:/.*)?$", "dest": "/api" },
+    { "src": "^/$", "dest": "/api" },
+    { "handle": "filesystem" },
+    { "src": "^/.*$", "dest": "/api" }
   ]
 }
