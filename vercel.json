@@ -11,6 +11,6 @@
     { "src": "^/api(?:/.*)?$", "dest": "/api" },
     { "src": "^/$", "dest": "/api" },
     { "handle": "filesystem" },
-    { "src": "^/.*$", "dest": "/api" }
+    { "src": "^/(?!_vercel/).*$", "dest": "/api" }
   ]
 }

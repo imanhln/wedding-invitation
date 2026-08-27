@@ -87,9 +87,16 @@ export default function Petals({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    /* Mật độ tính trên bề rộng 420px; sàn là 1 để mức "2" trong trang quản trị
-       thật sự chỉ thả lác đác vài trái tim. */
-    const targetCount = () => Math.max(1, Math.round((density * w) / 420));
+    /* Số tim = density * w / bề-rộng-tham-chiếu; sàn là 1 để mức "2" trong trang
+       quản trị thật sự chỉ thả lác đác vài trái tim.
+       Mốc tham chiếu co lại trên màn hình hẹp: điện thoại hẹp mà cao, nếu vẫn
+       chia cho 420 như desktop thì chỉ còn ~1/3 số tim và nhìn thưa hẳn. Ramp
+       tuyến tính 360px -> 250 và 900px -> 420 để không nhảy bậc khi xoay máy. */
+    const refWidth = () => {
+      const k = Math.min(1, Math.max(0, (w - 360) / (900 - 360)));
+      return 250 + k * (420 - 250);
+    };
+    const targetCount = () => Math.max(1, Math.round((density * w) / refWidth()));
 
     /* Resize chỉ đo lại và bù/bớt số tim — KHÔNG tạo lại cả đàn.
        Trên mobile, thanh địa chỉ ẩn/hiện khi cuộn là một chuỗi resize liên tục. */

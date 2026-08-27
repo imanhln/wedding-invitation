@@ -498,6 +498,67 @@
 .a-preview-frame iframe { width: 100%; height: 100%; border: 0; }
 .a-preview-note { font-size: 0.76rem; color: var(--a-muted); text-align: center; }
 
+/* ------------------------------ Thu vien file ----------------------------- */
+
+.a-lib-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.a-lib-spacer { flex: 1; }
+.a-lib-check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--a-muted); }
+
+.a-seg { display: inline-flex; border: 1px solid var(--a-line); border-radius: 8px; overflow: hidden; }
+
+.a-seg-btn {
+  padding: 7px 14px;
+  border: 0;
+  background: #fff;
+  color: var(--a-muted);
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.a-seg-btn + .a-seg-btn { border-left: 1px solid var(--a-line); }
+.a-seg-btn.is-active { background: var(--a-primary); color: #fff; }
+
+.a-lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+.a-lib-grid.is-list { grid-template-columns: 1fr; }
+
+.a-lib-item {
+  border: 1px solid var(--a-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fdfcfc;
+  display: grid;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+
+.a-lib-item.is-selected { border-color: var(--a-primary); box-shadow: 0 0 0 1px var(--a-primary) inset; }
+
+/* Cả ô ảnh là nhãn của checkbox: bấm chỗ nào trong ảnh cũng chọn được. */
+.a-lib-media { position: relative; display: block; aspect-ratio: 4 / 3; background: #f1ecea; cursor: pointer; }
+.a-lib-grid.is-list .a-lib-media { aspect-ratio: 6 / 1; }
+.a-lib-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.a-lib-audio { display: grid; place-content: center; height: 100%; font-size: 1.6rem; color: var(--a-primary); }
+.a-lib-tick { position: absolute; top: 8px; left: 8px; width: 18px; height: 18px; cursor: pointer; }
+
+.a-lib-badge {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--a-muted);
+}
+
+.a-lib-badge.is-used { background: var(--a-primary); color: #fff; }
+
+.a-lib-meta { display: grid; gap: 2px; padding: 0 10px; min-width: 0; }
+.a-lib-meta b { font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.a-lib-meta span { font-size: 0.74rem; color: var(--a-muted); }
+.a-lib-tools { display: flex; gap: 6px; padding: 0 10px; }
+
 @media (max-width: 1100px) {
   .a-shell.has-preview .a-body { grid-template-columns: 1fr; }
   .a-preview { position: static; }

@@ -6,6 +6,7 @@ import {
 import { SECTION_LABELS } from '../sections/index.js';
 import SectionEditor from './SectionEditor.jsx';
 import GuestsTab from './GuestsTab.jsx';
+import LibraryTab from './LibraryTab.jsx';
 import { Text, TextArea, Toggle, Color, Range, MediaPicker } from './fields.jsx';
 
 const TABS = [
@@ -15,8 +16,17 @@ const TABS = [
   { id: 'media', label: 'Nhạc & hiệu ứng' },
   { id: 'theme', label: 'Giao diện' },
   { id: 'guests', label: 'Khách mời' },
+  { id: 'library', label: 'Thư viện file' },
   { id: 'backup', label: 'Sao lưu' }
 ];
+
+/* Nhớ tab đang mở để F5 (hoặc mở lại trang quản trị) không nhảy về tab đầu. */
+const TAB_KEY = 'wedding_admin_tab';
+
+const savedTab = () => {
+  const id = localStorage.getItem(TAB_KEY);
+  return TABS.some((t) => t.id === id) ? id : TABS[0].id;
+};
 
 export default function AdminApp() {
   const [authed, setAuthed] = useState(false);
@@ -83,7 +93,7 @@ function Login({ onDone }) {
 
 function Dashboard({ onLogout }) {
   const [content, setContent] = useState(null);
-  const [tab, setTab] = useState('cover');
+  const [tab, setTab] = useState(savedTab);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -91,6 +101,8 @@ function Dashboard({ onLogout }) {
   const iframeRef = useRef(null);
 
   useEffect(() => { fetchContent().then(setContent).catch((e) => setMessage(e.message)); }, []);
+
+  useEffect(() => { localStorage.setItem(TAB_KEY, tab); }, [tab]);
 
   /* Đồng bộ nội dung sang khung xem trước */
   const pushPreview = useCallback((data) => {
@@ -191,6 +203,7 @@ function Dashboard({ onLogout }) {
           {tab === 'media' && <MediaTab content={content} update={update} />}
           {tab === 'theme' && <ThemeTab content={content} update={update} />}
           {tab === 'guests' && <GuestsTab />}
+          {tab === 'library' && <LibraryTab content={content} />}
           {tab === 'backup' && <BackupTab setContent={setContent} setMessage={setMessage} />}
         </main>
 
@@ -360,8 +373,10 @@ function MediaTab({ content, update }) {
       </Card>
 
       <Card title="Hiệu ứng" desc="Các hiệu ứng chuyển động trên thiệp.">
-        <Toggle label="Trái tim rơi" value={content.effects.petals} onChange={(v) => setEffects({ petals: v })} />
-        <Range label="Mật độ trái tim" value={content.effects.petalsDensity ?? 2} min={1} max={50} onChange={(v) => setEffects({ petalsDensity: v })} />
+        <Toggle label="Trái tim rơi — màn hình mở thiệp" value={content.effects.coverPetals !== false} onChange={(v) => setEffects({ coverPetals: v })} />
+        <Range label="Mật độ trái tim — màn hình mở thiệp" value={content.effects.coverPetalsDensity ?? 2} min={1} max={50} onChange={(v) => setEffects({ coverPetalsDensity: v })} />
+        <Toggle label="Trái tim rơi — trang thiệp" value={content.effects.petals} onChange={(v) => setEffects({ petals: v })} />
+        <Range label="Mật độ trái tim — trang thiệp" value={content.effects.petalsDensity ?? 2} min={1} max={50} onChange={(v) => setEffects({ petalsDensity: v })} />
         <Toggle label="Hiện dần khi cuộn (scroll reveal)" value={content.effects.revealAnimation} onChange={(v) => setEffects({ revealAnimation: v })} />
         <Toggle label="Hiệu ứng parallax cho ảnh lớn" value={content.effects.parallax} onChange={(v) => setEffects({ parallax: v })} />
       </Card>

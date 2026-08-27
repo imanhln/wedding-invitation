@@ -410,8 +410,8 @@ app.get(
     res.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
     res.type('html').send(
       shell
-        ? injectMeta(shell, content, base, pageUrl)
-        : fallbackHtml(content, base, pageUrl, search)
+        ? await injectMeta(shell, content, base, pageUrl)
+        : await fallbackHtml(content, base, pageUrl, search)
     );
   })
 );

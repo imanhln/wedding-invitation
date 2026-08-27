@@ -36,8 +36,12 @@ export const defaultContent = {
   },
 
   effects: {
+    // Trái tim rơi trên trang thiệp (sau khi khách bấm mở)
     petals: true,
     petalsDensity: 2,
+    // Trái tim rơi trên màn hình mở thiệp — chỉnh tách rời với trang thiệp
+    coverPetals: true,
+    coverPetalsDensity: 2,
     revealAnimation: true,
     parallax: true,
     grain: false,

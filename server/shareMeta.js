@@ -6,6 +6,8 @@
 // crawler chỉ thấy file index.html trống -> không hiện tiêu đề, mô tả, ảnh.
 // Vì vậy HTML phải được chèn sẵn thẻ meta ngay từ phía máy chủ.
 
+import { imageSize } from './imageSize.js';
+
 const esc = (v) =>
   String(v ?? '')
     .replace(/&/g, '&amp;')
@@ -63,8 +65,9 @@ export function shareMeta(content = {}, base = '', pageUrl = '') {
 }
 
 /** Chuỗi thẻ <title> + og:* + twitter:* để nhét vào <head>. */
-export function metaTags(content, base, pageUrl) {
+export async function metaTags(content, base, pageUrl) {
   const m = shareMeta(content, base, pageUrl);
+  const size = await imageSize(m.image);
   const tag = (attr, key, value) =>
     value ? `    <meta ${attr}="${key}" content="${esc(value)}" />` : '';
 
@@ -82,6 +85,9 @@ export function metaTags(content, base, pageUrl) {
     // khai luôn secure_url cho chắc.
     m.image.startsWith('https:') ? tag('property', 'og:image:secure_url', m.image) : '',
     tag('property', 'og:image:type', m.imageType),
+    // Zalo chỉ vẽ khung ảnh lớn khi biết trước kích thước — xem imageSize.js.
+    tag('property', 'og:image:width', size?.width),
+    tag('property', 'og:image:height', size?.height),
     tag('property', 'og:image:alt', m.title),
     tag('name', 'twitter:card', 'summary_large_image'),
     tag('name', 'twitter:title', m.title),
@@ -94,8 +100,8 @@ export function metaTags(content, base, pageUrl) {
 }
 
 /** Chèn thẻ meta vào index.html đã build (bỏ <title> mặc định của file đó). */
-export function injectMeta(html, content, base, pageUrl) {
-  const tags = metaTags(content, base, pageUrl);
+export async function injectMeta(html, content, base, pageUrl) {
+  const tags = await metaTags(content, base, pageUrl);
   const stripped = html.replace(/[ \t]*<title>[\s\S]*?<\/title>\r?\n?/i, '');
   return stripped.includes('</head>')
     ? stripped.replace('</head>', `${tags}\n  </head>`)
@@ -104,14 +110,15 @@ export function injectMeta(html, content, base, pageUrl) {
 
 /** Phao cứu sinh: không đọc được index.html thì vẫn trả thẻ meta cho crawler,
  *  còn người thật được chuyển sang /index.html (file tĩnh, không qua hàm này). */
-export function fallbackHtml(content, base, pageUrl, search = '') {
+export async function fallbackHtml(content, base, pageUrl, search = '') {
   const target = `/index.html${search}`;
+  const tags = await metaTags(content, base, pageUrl);
   return `<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-${metaTags(content, base, pageUrl)}
+${tags}
     <script>location.replace(${JSON.stringify(target)});</script>
   </head>
   <body>

@@ -28,8 +28,8 @@ export default function Cover({ cover, opening, onOpen, guestName, effects }) {
       style={style}
     >
       <Petals
-        enabled={effects?.petals !== false}
-        density={effects?.petalsDensity ?? 14}
+        enabled={effects?.coverPetals !== false}
+        density={effects?.coverPetalsDensity ?? 14}
         color="#F6DCC8"
         className="cover-hearts"
         startDelay={500}
