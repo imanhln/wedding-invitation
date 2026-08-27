@@ -1,5 +1,5 @@
-import Reveal from '../components/Reveal.jsx';
-import { guestFromUrl, splitDate } from '../utils.js';
+import Reveal from "../components/Reveal.jsx";
+import { guestFromUrl, splitDate } from "../utils.js";
 
 /**
  * Thiệp mời — Figma node 1:57 (panel đỏ 560x848):
@@ -13,7 +13,10 @@ export default function InvitationSection({ data, content }) {
   const parts = splitDate(data.eventDate);
 
   // "Tư gia" + "nhà trai" -> "Tư gia nhà trai" (bỏ trống bên nào thì mất bên đó)
-  const venuePlace = [data.venuePlace, data.venueSide].filter(Boolean).join(' ').trim();
+  const venuePlace = [data.venuePlace, data.venueSide]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 
   return (
     <section className="block block-invitation" id={data.id}>
@@ -51,11 +54,11 @@ export default function InvitationSection({ data, content }) {
         {/* Figma 17:16 — vạch 75x2 · ❦ 27 · vạch 75x2 */}
         <div className="panel-rule" aria-hidden="true">
           <span />
-          <em>{content.cover?.seal || '❦'}</em>
+          <em>{content.cover?.seal || "❦"}</em>
           <span />
         </div>
 
-        {/* "Lễ thành hôn được cử hành tại" / "Tư gia nhà trai" / địa chỉ —
+        {/* "Lễ thành hôn được tổ chức tại" / "Tư gia nhà trai" / địa chỉ —
             cả ba dòng đều sửa được trong trang quản trị. */}
         {(data.venueLine || venuePlace) && (
           <p className="panel-venue">
@@ -65,13 +68,17 @@ export default function InvitationSection({ data, content }) {
           </p>
         )}
 
-        {data.addressLine && <p className="panel-venue-address">{data.addressLine}</p>}
+        {data.addressLine && (
+          <p className="panel-venue-address">{data.addressLine}</p>
+        )}
 
         {(data.eventTime || parts) && (
           <div className="panel-timerow">
             {data.eventTime && <span>Vào lúc {data.eventTime}</span>}
             {/* Figma 17:18 — ngôi sao 10px ngăn giữa giờ và thứ */}
-            {data.eventTime && parts && <i className="panel-star" aria-hidden="true" />}
+            {data.eventTime && parts && (
+              <i className="panel-star" aria-hidden="true" />
+            )}
             {parts && <span>{parts.weekday}</span>}
           </div>
         )}
@@ -91,10 +98,17 @@ export default function InvitationSection({ data, content }) {
         {data.lunarLine && <p className="panel-lunar">{data.lunarLine}</p>}
 
         {guest && (
-          <p className="panel-guest">Kính mời: <b>{guest}</b></p>
+          <p className="panel-guest">
+            Kính mời: <b>{guest}</b>
+          </p>
         )}
 
-        <img className="deco-flower is-right" src="/figma/flower.png" alt="" aria-hidden="true" />
+        <img
+          className="deco-flower is-right"
+          src="/figma/flower.png"
+          alt=""
+          aria-hidden="true"
+        />
       </Reveal>
 
       {data.footNote && (

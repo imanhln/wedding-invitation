@@ -92,14 +92,14 @@ export default function SectionEditor({ section, onChange }) {
             hint="Mỗi dòng xuống hàng là một dòng trên thiệp"
           />
           <Text
-            label="Dòng dẫn nơi cử hành"
+            label="Dòng dẫn nơi tổ chức"
             value={section.venueLine}
             onChange={(v) => set({ venueLine: v })}
-            placeholder="Lễ thành hôn được cử hành tại"
+            placeholder="Lễ thành hôn được tổ chức tại"
           />
           <div className="a-row">
             <Text
-              label="Nơi cử hành"
+              label="Nơi tổ chức"
               value={section.venuePlace}
               onChange={(v) => set({ venuePlace: v })}
               placeholder="Tư gia"

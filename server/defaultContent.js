@@ -110,7 +110,7 @@ export const defaultContent = {
       groomSideLabel: "Ông Bà",
       brideSideLabel: "Ông Bà",
       middleNote: "Trân trọng báo tin\nlễ thành hôn của con chúng tôi",
-      venueLine: "Lễ thành hôn được cử hành tại",
+      venueLine: "Lễ thành hôn được tổ chức tại",
       venuePlace: "Tư gia",
       venueSide: "nhà trai",
       eventDate: "2026-09-20",
@@ -170,8 +170,16 @@ export const defaultContent = {
       askPickup: true,
       pickupLabel: "Điểm đón xe",
       pickupPoints: [
-        { id: "pk1", side: "Cô dâu", label: "Nhà gái - Thiệu Trung, Thanh Hoá" },
-        { id: "pk2", side: "Chú rể", label: "Nhà trai - Thiệu Trung, Thanh Hoá" },
+        {
+          id: "pk1",
+          side: "Cô dâu",
+          label: "Nhà gái - Thiệu Trung, Thanh Hoá",
+        },
+        {
+          id: "pk2",
+          side: "Chú rể",
+          label: "Nhà trai - Thiệu Trung, Thanh Hoá",
+        },
         { id: "pk3", side: "Cả hai", label: "Tự di chuyển tới nhà hàng" },
       ],
       thankYouText:
