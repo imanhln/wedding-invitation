@@ -120,3 +120,53 @@ export function parseMusicSource(raw) {
   // Link lạ: vẫn thử phát như file, nhưng đánh dấu để trang quản trị cảnh báo
   return { type: 'file', url, uncertain: true };
 }
+
+/* ============================== TẢI ẢNH VỀ MÁY ============================
+   Thẻ <a download> chỉ ép tải được với link cùng origin / data: / blob:.
+   Ảnh QR có thể là link ngoài, nên tải qua fetch -> blob trước; hỏng thì
+   quay về cách thường (cùng origin vẫn tải được, link ngoài thì mở tab mới). */
+
+/** Bỏ dấu tiếng Việt & ký tự lạ để tên file an toàn trên mọi hệ điều hành. */
+export function safeFileName(text, fallback = 'file') {
+  const slug = (text || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || fallback;
+}
+
+function clickDownload(href, filename) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = filename;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/**
+ * Tải ảnh về máy.
+ * -> true nếu tải được thành blob (chắc chắn ra file), false nếu phải fallback.
+ */
+export async function downloadImage(url, filename) {
+  if (!url) return false;
+  const ext = (url.match(/\.(png|jpe?g|webp|gif|svg)(?:\?|#|$)/i)?.[1] || 'png').toLowerCase();
+  const name = /\.[a-z0-9]+$/i.test(filename) ? filename : `${filename}.${ext}`;
+
+  try {
+    const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
+    if (!res.ok) throw new Error(String(res.status));
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    clickDownload(objectUrl, name);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    return true;
+  } catch {
+    clickDownload(url, name);
+    return false;
+  }
+}
