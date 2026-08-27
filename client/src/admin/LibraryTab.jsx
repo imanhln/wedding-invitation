@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listUploads, deleteUpload, uploadFiles } from '../api.js';
+import { coverWidth, imgProps } from '../img.js';
 
 const AUDIO_RE = /\.(mp3|m4a|wav|ogg)$/i;
 
@@ -185,7 +186,7 @@ export default function LibraryTab({ content }) {
                     checked={selected.has(f.name)}
                     onChange={() => toggle(f.name)}
                   />
-                  {isAudio ? <span className="a-lib-audio">♪</span> : <img src={f.url} alt={f.name} loading="lazy" />}
+                  {isAudio ? <span className="a-lib-audio">♪</span> : <img {...imgProps(f.url, coverWidth(180, 135))} alt={f.name} loading="lazy" decoding="async" />}
                   <span className={`a-lib-badge ${used ? 'is-used' : ''}`}>{used ? 'Đang dùng' : 'Không dùng'}</span>
                 </label>
 

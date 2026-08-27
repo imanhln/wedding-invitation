@@ -7,6 +7,24 @@
   "functions": {
     "api/index.js": { "maxDuration": 20 }
   },
+  "images": {
+    "sizes": [128, 320, 480, 640, 960, 1280, 1600],
+    "qualities": [75],
+    "formats": ["image/avif", "image/webp"],
+    "minimumCacheTTL": 2678400,
+    "dangerouslyAllowSVG": false,
+    "localPatterns": [
+      { "pathname": "^/figma/.*$", "search": "" },
+      { "pathname": "^/uploads/.*$", "search": "" }
+    ],
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "*.public.blob.vercel-storage.com",
+        "pathname": "^/.*$"
+      }
+    ]
+  },
   "routes": [
     { "src": "^/api(?:/.*)?$", "dest": "/api" },
     { "src": "^/$", "dest": "/api" },

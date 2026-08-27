@@ -1,11 +1,13 @@
 import Reveal from '../components/Reveal.jsx';
+import { coverWidth, imgProps } from '../img.js';
 
 export default function ThanksSection({ data }) {
   return (
     <section className="block block-thanks" id={data.id}>
       {data.image && (
+        /* Khung min(230px, 70%) x aspect 4/5 -> 230x287, cắt bởi cover */
         <Reveal anim="zoom" className="thanks-photo">
-          <img src={data.image} alt="" loading="lazy" />
+          <img {...imgProps(data.image, coverWidth(230, 287))} alt="" loading="lazy" decoding="async" />
         </Reveal>
       )}
 

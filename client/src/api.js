@@ -56,9 +56,19 @@ export function exportUrl() {
 // Vercel chặn request nặng hơn 4.5 MB, mà ảnh chụp bằng điện thoại thường 5-12 MB.
 // Thu nhỏ ngay trong trình duyệt vừa vượt được giới hạn đó, vừa làm thiệp nhẹ hơn
 // khi khách mở bằng 3G. Ảnh nhỏ sẵn thì giữ nguyên, không đụng vào.
+//
+// 1600px (trước là 2000) là khổ lớn nhất còn dùng tới — bản cho lightbox tràn
+// màn hình. Mọi khung nhỏ hơn (album 320px, ảnh người 180px, thumbnail) không
+// lấy file này mà lấy bản đã co qua /_vercel/image, xem src/img.js.
+//
+// Vẫn xuất JPEG chứ KHÔNG xuất WebP, dù WebP nhỏ hơn ~30%: file này là ảnh gốc,
+// và một trong số chúng được chọn làm og:image cho link chia sẻ (shareMeta.js).
+// Zalo không dựng được preview từ ảnh WebP. Việc đổi sang WebP/AVIF đã do
+// /_vercel/image làm khi trả ảnh cho trình duyệt, nên không mất gì.
 
-const MAX_DIM = 2000;
-const SKIP_UNDER = 400 * 1024;
+const MAX_DIM = 1600;
+const SKIP_UNDER = 150 * 1024;
+const JPEG_QUALITY = 0.85;
 
 async function shrinkImage(file) {
   if (!/^image\/(jpeg|jpg|png|webp)$/i.test(file.type) || file.size <= SKIP_UNDER) return file;
@@ -80,9 +90,9 @@ async function shrinkImage(file) {
   canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
   bitmap.close?.();
 
-  const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.85));
+  const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', JPEG_QUALITY));
   if (!blob || blob.size >= file.size) return file;
 
-  const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+  const name = `${file.name.replace(/\.[^.]+$/, '')}.jpg`;
   return new File([blob], name, { type: 'image/jpeg' });
 }

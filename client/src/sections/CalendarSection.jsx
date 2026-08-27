@@ -148,7 +148,7 @@ export default function CalendarSection({ data, content }) {
           </button>
         )}
 
-        <img className="deco-flower is-left" src="/figma/flower.png" alt="" aria-hidden="true" />
+        <img className="deco-flower is-left" src="/figma/flower.webp" alt="" aria-hidden="true" />
       </Reveal>
 
       {rsvpOpen && showRsvp && createPortal(

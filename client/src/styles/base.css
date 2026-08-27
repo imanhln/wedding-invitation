@@ -25,9 +25,9 @@
   --f-serif: 'EB Garamond', serif;      /* tên đôi trong panel đỏ */
 
   /* ảnh trang trí xuất từ Figma */
-  --img-castle: url('/figma/castle.png');
-  --img-flower: url('/figma/flower.png');
-  --img-paper: url('/figma/paper-texture.png');
+  --img-castle: url('/figma/castle.webp');
+  --img-flower: url('/figma/flower.webp');
+  --img-paper: url('/figma/paper-texture.webp');
 }
 
 *,

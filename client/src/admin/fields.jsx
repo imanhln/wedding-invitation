@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { listUploads, uploadFiles } from '../api.js';
 import { parseMusicSource } from '../utils.js';
+import { coverWidth, imgProps } from '../img.js';
 
 /* --------------------------------- Cơ bản -------------------------------- */
 
@@ -118,7 +119,7 @@ export function MediaPicker({ label, value, onChange, accept = 'image/*', hint, 
             accept.includes('audio') ? (
               <MusicPreview url={value} />
             ) : (
-              <img src={value} alt="" />
+              <img {...imgProps(value, coverWidth(110, 84))} alt="" decoding="async" />
             )
           ) : (
             <span className="a-media-empty">Chưa chọn</span>
@@ -198,7 +199,7 @@ export function MediaModal({ onClose, onPick, accept = 'image/*', multiple = fal
         <div className={`a-modal-grid ${isAudio ? 'is-list' : ''}`}>
           {shown.map((f) => (
             <button type="button" key={f.name} className="a-thumb" onClick={() => onPick(f.url)} title={f.name}>
-              {isAudio ? <span className="a-thumb-name">{f.name}</span> : <img src={f.url} alt={f.name} loading="lazy" />}
+              {isAudio ? <span className="a-thumb-name">{f.name}</span> : <img {...imgProps(f.url, coverWidth(120, 120))} alt={f.name} loading="lazy" decoding="async" />}
             </button>
           ))}
           {!shown.length && <p className="a-empty">Chưa có file nào.</p>}

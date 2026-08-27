@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import Petals from "./Petals.jsx";
+import { coverBgUrl, coverWidth, imgProps } from "../img.js";
 
-const FLOWER = "/figma/flower.png";
+const FLOWER = "/figma/flower.webp";
 
 /**
  * Màn hình đầu tiên — Figma node 1:2 "1920w light":
@@ -16,9 +17,15 @@ export default function Cover({ cover, opening, onOpen, guestName, effects }) {
     return () => cancelAnimationFrame(id);
   }, []);
 
+  /* Ảnh nền bìa là ảnh LCP của cả trang. `background-image` không dùng được
+     srcset, nên coverBgUrl() chốt một khổ 1280px cho mọi máy — nhờ URL không
+     phụ thuộc viewport mà máy chủ chèn được <link rel="preload"> khớp đúng URL
+     này vào HTML (shareMeta.js), ảnh bắt đầu tải trước cả bundle JS. */
   const style = cover.backgroundImage
     ? {
-        backgroundImage: `linear-gradient(rgba(92,22,29,.82), rgba(58,13,18,.94)), url(${cover.backgroundImage})`,
+        backgroundImage: `linear-gradient(rgba(92,22,29,.82), rgba(58,13,18,.94)), url(${coverBgUrl(
+          cover.backgroundImage,
+        )})`,
       }
     : undefined;
 
@@ -68,7 +75,12 @@ export default function Cover({ cover, opening, onOpen, guestName, effects }) {
 
           {cover.photo && (
             <div className="cover-photo cover-fade" style={{ "--d": "260ms" }}>
-              <img src={cover.photo} alt="" />
+              {/* Khung 88x88 vuông, cắt bởi cover */}
+              <img
+                {...imgProps(cover.photo, coverWidth(88, 88))}
+                alt=""
+                decoding="async"
+              />
             </div>
           )}
 

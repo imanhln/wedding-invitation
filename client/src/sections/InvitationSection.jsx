@@ -105,7 +105,7 @@ export default function InvitationSection({ data, content }) {
 
         <img
           className="deco-flower is-right"
-          src="/figma/flower.png"
+          src="/figma/flower.webp"
           alt=""
           aria-hidden="true"
         />

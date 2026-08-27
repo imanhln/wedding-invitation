@@ -1,11 +1,22 @@
 import BlockTitle from '../components/BlockTitle.jsx';
 import Reveal from '../components/Reveal.jsx';
+import { coverWidth, imgProps } from '../img.js';
 
 function Person({ person, anim, delay, showFamily }) {
   return (
     <Reveal anim={anim} delay={delay} className="person">
+      {/* Khung min(180px, 62%) x aspect 4/5 -> 180x225, cắt bởi cover */}
       <div className="person-photo">
-        {person.photo ? <img src={person.photo} alt={person.name} loading="lazy" /> : <span className="person-photo-empty">♥</span>}
+        {person.photo ? (
+          <img
+            {...imgProps(person.photo, coverWidth(180, 225))}
+            alt={person.name}
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <span className="person-photo-empty">♥</span>
+        )}
         <span className="person-photo-ring" aria-hidden="true" />
       </div>
 

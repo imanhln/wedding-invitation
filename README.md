@@ -111,9 +111,23 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
   và bị xoá sạch mỗi lần deploy, nên toàn bộ đã chuyển sang Vercel Blob
   (`server/store.js`). Chạy ở máy vẫn ghi file như cũ — cứ không có
   `BLOB_READ_WRITE_TOKEN` là tự động dùng file.
-- **Ảnh tự thu nhỏ về tối đa 2000px trước khi tải lên** (`shrinkImage` trong
+- **Ảnh tự thu nhỏ về tối đa 1600px trước khi tải lên** (`shrinkImage` trong
   `client/src/api.js`). Vercel chặn request nặng quá 4.5 MB, mà ảnh điện thoại
   thường 5–12 MB. Thu nhỏ vừa lách được giới hạn, vừa làm thiệp mở nhanh hơn.
+  Vẫn xuất JPEG chứ không xuất WebP: một trong các ảnh này được chọn làm
+  `og:image`, mà Zalo không dựng được preview từ WebP.
+- **Mỗi khung ảnh chỉ tải đúng khổ nó cần** (`client/src/img.js`). Ảnh gốc 1600px
+  chỉ dùng cho lightbox; album lấy bản 320/640px, ảnh người 320/640px, thumbnail
+  trong /admin 128px — qua API tối ưu ảnh của Vercel (`/_vercel/image`, khai ở
+  khoá `images` trong `vercel.json`), trả về AVIF/WebP do trình duyệt tự chọn.
+  Chạy ở máy thì cờ tắt và mọi ảnh dùng URL gốc, vì `/_vercel/image` không có.
+- **Album chỉ nạp 5 ảnh quanh ảnh đang xem.** Các `.cf-item` chồng lên nhau nên
+  ảnh xa chỉ bị `opacity: 0` — vẫn nằm trong viewport, `loading="lazy"` không
+  chặn được. `GallerySection.jsx` tự gán `src` theo vị trí và mở rộng dần khi
+  khách lật, nên album 30 ảnh không còn tải 30 file một lượt.
+- **Ảnh nền bìa được preload từ HTML** (`server/shareMeta.js`). Nó là ảnh LCP mà
+  lại nằm trong `background-image` do React đặt sau khi tải xong bundle, nên
+  máy chủ chèn sẵn `<link rel="preload">` trỏ đúng URL mà `coverBgUrl()` sinh ra.
 - **File nhạc không thu nhỏ được**, nên mp3 phải dưới 4 MB. Nặng hơn thì nén lại,
   hoặc dán thẳng URL bên ngoài vào ô nhạc nền trong trang quản trị.
 - **Token đăng nhập admin giờ ký bằng HMAC** (`server/session.js`) thay vì lưu
@@ -200,18 +214,19 @@ Cormorant Garamond ("SAVE THE DATE"), Lora (bìa thiệp), Inter (toàn bộ ph�
 
 ### Ảnh trang trí xuất từ Figma
 
-Nằm trong `client/public/figma/` — dùng trực tiếp bằng đường dẫn tuyệt đối:
+Nằm trong `client/public/figma/` — dùng trực tiếp bằng đường dẫn tuyệt đối
+(đã chuyển hết từ PNG sang WebP: 1,9 MB → 289 KB, cùng chất lượng):
 
-| File                                      | Dùng ở đâu                                 |
-| ----------------------------------------- | ------------------------------------------ |
-| `castle.png`                              | hoạ tiết lâu đài mờ (4 chỗ như Figma)      |
-| `envelope-back.png`, `envelope-front.png` | phong thư phần mở đầu                      |
-| `flower.png`                              | nhánh hoa trên bìa và tràn ra các panel đỏ |
-| `paper-texture.png`                       | vân giấy phủ cột thiệp và panel            |
-| `papernote.png`                           | tờ giấy note sau form sổ lưu bút           |
-| `redenvelope.png`                         | phong bì hộp quà mừng                      |
-| `icon-camera/cake/cook.png`               | icon lịch trình ngày cưới                  |
-| `demo-*.jpg`                              | ảnh mẫu, thay bằng ảnh thật trong /admin   |
+| File                                        | Dùng ở đâu                                 |
+| ------------------------------------------- | ------------------------------------------ |
+| `castle.webp`                               | hoạ tiết lâu đài mờ (4 chỗ như Figma)      |
+| `envelope-back.webp`, `envelope-front.webp` | phong thư phần mở đầu                      |
+| `flower.webp`                               | nhánh hoa trên bìa và tràn ra các panel đỏ |
+| `paper-texture.webp`                        | vân giấy phủ cột thiệp và panel            |
+| `papernote.webp`                            | tờ giấy note sau form sổ lưu bút           |
+| `redenvelope.webp`                          | phong bì hộp quà mừng                      |
+| `icon-camera/cake/cook.webp`                | icon lịch trình ngày cưới                  |
+| `demo-*.jpg`                                | ảnh mẫu, thay bằng ảnh thật trong /admin   |
 
 Muốn xuất lại ảnh từ Figma: mở file trong Figma desktop rồi dùng MCP `figma-mcp-go`
 (`save_screenshots`) — cấu hình sẵn trong `.mcp.json`.

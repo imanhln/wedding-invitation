@@ -1,5 +1,6 @@
 import BlockTitle from '../components/BlockTitle.jsx';
 import Reveal from '../components/Reveal.jsx';
+import { imgProps } from '../img.js';
 
 export default function StorySection({ data }) {
   const items = data.items || [];
@@ -21,9 +22,15 @@ export default function StorySection({ data }) {
             <span className="timeline-dot" aria-hidden="true" />
 
             <div className="timeline-card">
+              {/* Ảnh tràn ngang thẻ, thẻ nằm trong cột giấy rộng ~480px */}
               {item.image && (
                 <div className="timeline-image">
-                  <img src={item.image} alt={item.title} loading="lazy" />
+                  <img
+                    {...imgProps(item.image, 480, { sizes: '(max-width: 560px) 100vw, 480px' })}
+                    alt={item.title}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
               )}
               <span className="timeline-date">{item.date}</span>

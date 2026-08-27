@@ -35,6 +35,38 @@ const abs = (url, base) => {
   }
 };
 
+/* ------------------------- Nạp sớm ảnh nền bìa ---------------------------
+   Ảnh nền bìa là ảnh LCP của trang, nhưng nó nằm trong `background-image` do
+   React đặt sau khi tải xong bundle JS *và* gọi /api/content — tức là trình
+   duyệt chỉ biết tới nó rất muộn. Chèn <link rel="preload"> vào HTML gốc cho
+   nó khởi động ngay từ byte đầu tiên.
+
+   Ba con số dưới đây phải khớp TỪNG KÝ TỰ với coverBgUrl() trong
+   client/src/img.js. Preload lệch URL thì ảnh bị tải hai lần, tệ hơn là không
+   preload gì cả. */
+
+const COVER_BG_WIDTH = 1280;
+const IMG_QUALITY = 75;
+const BLOB_HOST = /(^|\.)public\.blob\.vercel-storage\.com$/i;
+
+function optimizedCoverUrl(url) {
+  // /_vercel/image chỉ tồn tại trên bản triển khai Vercel.
+  if (!url || !process.env.VERCEL) return '';
+  if (/^(data:|blob:)/i.test(url) || /\.svg(\?|#|$)/i.test(url)) return '';
+
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      if (!BLOB_HOST.test(new URL(url).hostname)) return '';
+    } catch {
+      return '';
+    }
+  } else if (!url.startsWith('/')) {
+    return '';
+  }
+
+  return `/_vercel/image?url=${encodeURIComponent(url)}&w=${COVER_BG_WIDTH}&q=${IMG_QUALITY}`;
+}
+
 // Chưa chọn "Ảnh chia sẻ" trong trang quản trị thì lấy tạm ảnh có sẵn của thiệp
 // — thà lấy ảnh cưới còn hơn để link trống trơn.
 function pickImage(content) {
@@ -59,6 +91,7 @@ export function shareMeta(content = {}, base = '', pageUrl = '') {
     image,
     imageType: MIME[(image.split('?')[0].split('.').pop() || '').toLowerCase()] || '',
     favicon: abs(meta.favicon, base),
+    coverPreload: optimizedCoverUrl(cover.backgroundImage),
     url: pageUrl || base,
     siteName: names ? `Thiệp cưới ${names}` : 'Thiệp cưới'
   };
@@ -93,7 +126,10 @@ export async function metaTags(content, base, pageUrl) {
     tag('name', 'twitter:title', m.title),
     tag('name', 'twitter:description', m.description),
     tag('name', 'twitter:image', m.image),
-    m.favicon ? `    <link rel="icon" href="${esc(m.favicon)}" />` : ''
+    m.favicon ? `    <link rel="icon" href="${esc(m.favicon)}" />` : '',
+    m.coverPreload
+      ? `    <link rel="preload" as="image" href="${esc(m.coverPreload)}" fetchpriority="high" />`
+      : ''
   ]
     .filter(Boolean)
     .join('\n');

@@ -1,10 +1,11 @@
 import Reveal from '../components/Reveal.jsx';
+import { imgProps } from '../img.js';
 
 /** Icon có sẵn xuất từ Figma (camera.webp / cake.webp / cook.webp). */
 export const TIMELINE_ICONS = {
-  camera: '/figma/icon-camera.png',
-  cake: '/figma/icon-cake.png',
-  cook: '/figma/icon-cook.png'
+  camera: '/figma/icon-camera.webp',
+  cake: '/figma/icon-cake.webp',
+  cook: '/figma/icon-cook.webp'
 };
 
 /**
@@ -21,12 +22,21 @@ export default function EventsSection({ data }) {
 
         <div className="timeline-rows">
           {items.map((item, i) => {
+            const builtIn = Boolean(TIMELINE_ICONS[item.icon]);
             const icon = TIMELINE_ICONS[item.icon] || (item.icon?.startsWith('/') ? item.icon : '');
             return (
               <div className="tl-row" key={item.id || i}>
                 <span className="tl-left">
+                  {/* Icon có sẵn đã là webp 2-3KB, để nguyên. Icon tự tải lên
+                      thì là ảnh 1600px vẽ trong khung 40px — phải hạ khổ. */}
                   <span className="tl-icon">
-                    {icon && <img src={icon} alt="" aria-hidden="true" />}
+                    {icon && (
+                      <img
+                        {...(builtIn ? { src: icon } : imgProps(icon, 40))}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    )}
                   </span>
                   <span className="tl-time">{item.time}</span>
                 </span>
@@ -40,7 +50,7 @@ export default function EventsSection({ data }) {
           })}
         </div>
 
-        <img className="deco-flower is-right-low" src="/figma/flower.png" alt="" aria-hidden="true" />
+        <img className="deco-flower is-right-low" src="/figma/flower.webp" alt="" aria-hidden="true" />
       </Reveal>
     </section>
   );

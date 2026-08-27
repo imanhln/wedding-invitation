@@ -33,7 +33,7 @@ export default function GiftSection({ data }) {
 
   return (
     <section className="block block-gift" id={data.id}>
-      <img className="deco-castle is-gift" src="/figma/castle.png" alt="" aria-hidden="true" />
+      <img className="deco-castle is-gift" src="/figma/castle.webp" alt="" aria-hidden="true" />
 
       <BlockTitle title={data.title} subtitle={data.subtitle} />
 
@@ -51,12 +51,12 @@ export default function GiftSection({ data }) {
 
           <span className="gift-env gift-env-2" aria-hidden="true">
             <span className="gift-shadow" />
-            <img className="gift-envelope" src="/figma/redenvelope.png" alt="" />
+            <img className="gift-envelope" src="/figma/redenvelope.webp" alt="" />
           </span>
 
           <span className="gift-env gift-env-1" aria-hidden="true">
             <span className="gift-shadow" />
-            <img className="gift-envelope" src="/figma/redenvelope.png" alt="" />
+            <img className="gift-envelope" src="/figma/redenvelope.webp" alt="" />
           </span>
 
           <span className="gift-hint">{data.buttonText || 'Nhấn để mở'}</span>

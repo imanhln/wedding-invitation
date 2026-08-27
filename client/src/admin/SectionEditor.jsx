@@ -10,6 +10,7 @@ import {
   MediaModal,
 } from "./fields.jsx";
 import { uid } from "../utils.js";
+import { coverWidth, imgProps } from "../img.js";
 
 /** Form chỉnh sửa riêng cho từng loại section. */
 export default function SectionEditor({ section, onChange }) {
@@ -739,7 +740,7 @@ function GalleryEditor({ section, set }) {
         <div className="a-photo-grid">
           {photos.map((p, i) => (
             <div className="a-photo" key={p.id || i}>
-              <img src={p.url} alt="" loading="lazy" />
+              <img {...imgProps(p.url, coverWidth(140, 140))} alt="" loading="lazy" decoding="async" />
               <input
                 value={p.caption || ""}
                 placeholder="Chú thích"
