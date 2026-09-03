@@ -1262,7 +1262,9 @@
   overflow: hidden;
   background: #f3ece2;
   cursor: pointer;
-  box-shadow: 0 22px 44px -20px rgba(59, 14, 18, 0.55);
+  /* KHÔNG dùng box-shadow ở đây: bóng nằm cùng mặt phẳng 3D với tấm ảnh, nên
+     khi ảnh xoay rotateY lúc chuyển cảnh thì bóng bị kéo nghiêng theo, thành
+     một vệt tối lướt ngang khung — rất chướng mắt. */
   transform: translate(-50%, -50%);
   transition:
     transform 0.7s cubic-bezier(0.22, 0.68, 0.24, 1),
