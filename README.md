@@ -191,6 +191,11 @@ Hai section không phải khối riêng trên thiệp mà chỉ là cấu hình 
 cuối panel "Thông tin tiệc cưới": `map` (nút "Mở bản đồ", mở Google Maps ở tab mới)
 và `rsvp` (nút "Xác nhận tham dự"). Tắt công tắc của chúng là ẩn nút tương ứng.
 
+Form RSVP hỏi thêm **số điện thoại** (công tắc "Hỏi số điện thoại", kèm công tắc
+bắt buộc hay không — bắt buộc chỉ áp dụng với khách chọn sẽ tham dự, khách báo
+bận vẫn gửi được khi để trống). Số được chuẩn hoá về dạng chỉ chữ số ở máy chủ,
+hiện thành link bấm-để-gọi ở tab Khách mời và có một cột riêng trong file CSV.
+
 Form RSVP hỏi thêm **điểm đón xe**: danh sách điểm đón đặt trong /admin (mỗi
 điểm gắn với nhà gái / nhà trai / cả hai), ô chọn luôn hiện trong form và lọc
 lại theo bên khách vừa chọn. Hạn phản hồi tách riêng thành ô ngày `deadline`,

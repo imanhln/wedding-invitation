@@ -66,10 +66,36 @@ export function copyText(text) {
   return Promise.resolve();
 }
 
+/**
+ * Giải mã sâu chuỗi bị mã hoá nhiều lần.
+ *
+ * Ứng dụng chat trên điện thoại (Zalo, Messenger, Viber...) hay mã hoá LẠI link
+ * trước khi mở trong trình duyệt trong app: dấu `%` của "%20" thành "%25", nên
+ * máy khách nhận "?to=Nguy%E1%BB%85n%2520V%C4%83n%2520A". URLSearchParams chỉ
+ * giải mã một lượt -> tên khách còn dính "%20" giữa các chữ. Giải tiếp cho tới
+ * khi hết dấu mã hoá (giới hạn vài vòng cho an toàn).
+ */
+function decodeDeep(value) {
+  let out = String(value || '');
+  for (let i = 0; i < 3 && /%[0-9A-Fa-f]{2}/.test(out); i += 1) {
+    let next;
+    try {
+      next = decodeURIComponent(out);
+    } catch {
+      break; // có dấu % lẻ (tên khách thật sự chứa "%") -> giữ nguyên
+    }
+    if (next === out) break;
+    out = next;
+  }
+  return out;
+}
+
 /** Lấy tên khách mời từ query: ?to=Nguyễn Văn A */
 export function guestFromUrl() {
   const p = new URLSearchParams(window.location.search);
-  return p.get('to') || p.get('guest') || '';
+  const raw = p.get('to') || p.get('guest') || '';
+  // Lớp mã hoá bên trong còn hay dùng "+" thay khoảng trắng; tên người không có "+".
+  return decodeDeep(raw).replace(/\+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 export const uid = () => Math.random().toString(36).slice(2, 9);

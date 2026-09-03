@@ -170,6 +170,9 @@ export const defaultContent = {
       askAttendance: true,
       askGuestCount: true,
       askSide: true,
+      // Số điện thoại để chủ tiệc liên lạc khi cần (đổi giờ, sắp xe đón...).
+      askPhone: true,
+      phoneRequired: true,
       // Chọn "khách của cô dâu / chú rể" xong thì hiện thêm ô chọn điểm đón.
       askPickup: true,
       pickupLabel: "Điểm đón xe",

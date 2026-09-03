@@ -27,6 +27,43 @@ function loadYouTubeApi() {
   return ytApiPromise;
 }
 
+/* ---------------- iframe nhạc: chỉ lấy TIẾNG, chặn toàn màn hình ----------
+   `new YT.Player(<div>)` để YouTube tự sinh iframe, và iframe nó sinh ra LUÔN
+   có `allowfullscreen` + `allow="...picture-in-picture"`. Trên điện thoại,
+   trình duyệt dùng ngay quyền đó để đẩy video lên toàn màn hình khi bấm play —
+   khách bấm "Mở thiệp" thì thấy video YouTube, phải tắt mới thấy thiệp.
+
+   Quyền toàn màn hình của iframe được chốt lúc iframe TẢI, gỡ thuộc tính sau
+   đó là vô tác dụng. Nên ta tự tạo iframe (không allowfullscreen, `allow` chỉ
+   xin autoplay) rồi gắn YT.Player vào iframe có sẵn — API vẫn điều khiển được
+   nhờ `enablejsapi=1`. */
+
+function createAudioIframe(videoId) {
+  const params = new URLSearchParams({
+    enablejsapi: '1',
+    autoplay: '0',
+    controls: '0',
+    disablekb: '1',
+    fs: '0', // ẩn nút toàn màn hình trong player
+    modestbranding: '1',
+    rel: '0',
+    playsinline: '1', // iOS: phát trong trang, không nhảy player hệ thống
+    iv_load_policy: '3',
+    loop: '1',
+    playlist: videoId, // bắt buộc để loop=1 có tác dụng với 1 video
+    origin: window.location.origin
+  });
+
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube.com/embed/${videoId}?${params}`;
+  iframe.title = 'Nhạc nền';
+  iframe.tabIndex = -1;
+  iframe.setAttribute('aria-hidden', 'true');
+  iframe.setAttribute('frameborder', '0');
+  iframe.setAttribute('allow', 'autoplay; encrypted-media'); // KHÔNG có fullscreen / PiP
+  return iframe;
+}
+
 /**
  * Nhạc nền cho thiệp — nhận cả file .mp3 lẫn link YouTube.
  *
@@ -61,24 +98,12 @@ export default function useMusic(url, volume = 0.6) {
       .then((YT) => {
         if (cancelled || !hostRef.current) return;
 
-        // YouTube thay thế chính thẻ được truyền vào bằng <iframe>, nên tạo một
-        // thẻ con "dùng một lần" để React không phải quản lý node đã bị thay.
-        const holder = document.createElement('div');
-        hostRef.current.appendChild(holder);
+        // Iframe tự tạo (xem createAudioIframe) — React không quản lý node này,
+        // hàm dọn dẹp bên dưới sẽ xoá cả ô chứa.
+        const iframe = createAudioIframe(source.id);
+        hostRef.current.appendChild(iframe);
 
-        ytRef.current = new YT.Player(holder, {
-          videoId: source.id,
-          playerVars: {
-            autoplay: 0,
-            controls: 0,
-            disablekb: 1,
-            fs: 0,
-            modestbranding: 1,
-            rel: 0,
-            playsinline: 1,
-            loop: 1,
-            playlist: source.id // bắt buộc để loop=1 có tác dụng với 1 video
-          },
+        ytRef.current = new YT.Player(iframe, {
           events: {
             onReady: (e) => {
               e.target.setVolume(Math.round(volumeRef.current * 100));
@@ -104,6 +129,27 @@ export default function useMusic(url, volume = 0.6) {
       if (hostRef.current) hostRef.current.innerHTML = '';
     };
   }, [source?.type, source?.id]);
+
+  /* --------------------- Chốt chặn cuối: thoát toàn màn hình ----------------
+     Nếu trình duyệt nào vẫn cố đẩy iframe nhạc lên toàn màn hình thì thoát
+     ngay, để khách thấy thiệp chứ không phải video YouTube. */
+  useEffect(() => {
+    if (source?.type !== 'youtube') return undefined;
+
+    const onFullscreen = () => {
+      const el = document.fullscreenElement || document.webkitFullscreenElement;
+      if (!el || !hostRef.current?.contains(el)) return;
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      try { exit?.call(document); } catch { /* trình duyệt từ chối, bỏ qua */ }
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreen);
+    document.addEventListener('webkitfullscreenchange', onFullscreen);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreen);
+      document.removeEventListener('webkitfullscreenchange', onFullscreen);
+    };
+  }, [source?.type]);
 
   /* ------------------------------- Âm lượng -------------------------------- */
   useEffect(() => {

@@ -23,9 +23,12 @@ export default function GuestsTab() {
 
   const exportCsv = () => {
     const rows = [
-      ['Tên', 'Tham dự', 'Số người', 'Khách của', 'Điểm đón', 'Lời nhắn', 'Thời gian'],
+      ['Tên', 'Điện thoại', 'Tham dự', 'Số người', 'Khách của', 'Điểm đón', 'Lời nhắn', 'Thời gian'],
       ...rsvp.map((r) => [
         r.name,
+        // Tab ở đầu để Excel đọc là chữ, giữ số 0 đứng đầu ("0912..." chứ
+        // không thành 912...).
+        r.phone ? `\t${r.phone}` : '',
         r.attending ? 'Có' : 'Không',
         r.guests,
         r.side,
@@ -77,7 +80,7 @@ export default function GuestsTab() {
             <table className="a-table">
               <thead>
                 <tr>
-                  <th>Tên</th><th>Tham dự</th><th>Số người</th><th>Khách của</th>
+                  <th>Tên</th><th>Điện thoại</th><th>Tham dự</th><th>Số người</th><th>Khách của</th>
                   <th>Điểm đón</th><th>Lời nhắn</th><th>Thời gian</th><th />
                 </tr>
               </thead>
@@ -85,6 +88,7 @@ export default function GuestsTab() {
                 {rsvp.map((r) => (
                   <tr key={r.id}>
                     <td>{r.name}</td>
+                    <td>{r.phone ? <a href={`tel:${r.phone}`}>{r.phone}</a> : '—'}</td>
                     <td><span className={`a-pill ${r.attending ? 'is-yes' : 'is-no'}`}>{r.attending ? 'Có' : 'Không'}</span></td>
                     <td>{r.guests}</td>
                     <td>{r.side}</td>

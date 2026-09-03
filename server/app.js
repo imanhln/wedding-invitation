@@ -201,16 +201,44 @@ app.post(
   })
 );
 
+/* Khách nhập số điện thoại rất tự do: "0912 345 678", "0912.345.678",
+   "(+84) 912-345-678". Chỉ giữ chữ số (và dấu + nếu là số quốc tế) để bấm gọi
+   được ngay từ trang quản trị và dễ soi trùng, nhưng vẫn phải là số thật mới
+   nhận — 8..15 chữ số theo chuẩn E.164. */
+function normalizePhone(raw) {
+  const text = String(raw ?? '').trim();
+  if (!text) return { ok: true, value: '' };
+  const plus = text.startsWith('+') || text.startsWith('(+') ? '+' : '';
+  const digits = text.replace(/\D/g, '');
+  if (digits.length < 8 || digits.length > 15) return { ok: false, value: '' };
+  return { ok: true, value: `${plus}${digits}` };
+}
+
 app.post(
   '/api/rsvp',
   wrap(async (req, res) => {
-    const { name, attending, guests, side, pickup, message } = req.body || {};
+    const { name, phone, attending, guests, side, pickup, message } = req.body || {};
     if (!name || !String(name).trim()) return res.status(400).json({ error: 'Vui lòng nhập tên của bạn' });
+
+    const willAttend = attending === true || attending === 'yes';
+
+    const tel = normalizePhone(phone);
+    if (!tel.ok) return res.status(400).json({ error: 'Số điện thoại không hợp lệ' });
+
+    // Bắt buộc hay không do trang quản trị quyết định (section 'rsvp'), nên
+    // phải soi cấu hình ở đây chứ không tin mỗi kiểm tra phía trình duyệt.
+    // Chỉ đòi số của khách sẽ đến — khách đã báo bận thì không cần liên lạc.
+    const cfg = (await getContent()).sections?.find((s) => s.type === 'rsvp') || {};
+    if (cfg.askPhone && cfg.phoneRequired && willAttend && !tel.value) {
+      return res.status(400).json({ error: 'Vui lòng nhập số điện thoại' });
+    }
+
     const list = await readJson('rsvp', []);
     list.unshift({
       id: crypto.randomUUID(),
       name: String(name).trim().slice(0, 80),
-      attending: attending === true || attending === 'yes',
+      phone: tel.value,
+      attending: willAttend,
       guests: Number(guests) || 1,
       side: String(side || '').slice(0, 40),
       pickup: String(pickup || '').slice(0, 120),

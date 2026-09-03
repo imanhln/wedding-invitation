@@ -17,12 +17,13 @@ function pickupsFor(points, side) {
 /**
  * Form xác nhận tham dự — hiển thị trong modal mở từ panel thông tin
  * tiệc cưới (CalendarSection).
- * `data`: { askAttendance, askGuestCount, askSide, askPickup, pickupLabel,
- *           pickupPoints, note, deadline, thankYouText }
+ * `data`: { askAttendance, askGuestCount, askSide, askPhone, phoneRequired,
+ *           askPickup, pickupLabel, pickupPoints, note, deadline, thankYouText }
  */
 export default function RsvpForm({ data = {} }) {
   const [form, setForm] = useState({
     name: guestFromUrl(),
+    phone: '',
     attending: 'yes',
     guests: 1,
     side: '',
@@ -45,15 +46,32 @@ export default function RsvpForm({ data = {} }) {
   const pickups = pickupsFor(data.pickupPoints, form.side);
   const showPickup = data.askPickup && pickups.length > 0;
 
+  // Chỉ đòi số của khách sẽ đến — khách đã báo bận thì không cần liên lạc lại.
+  const phoneRequired = !!data.askPhone && !!data.phoneRequired && form.attending === 'yes';
+
   // Ghi chú = câu chữ trong trang quản trị + hạn phản hồi đặt riêng bằng ô ngày
   const note = [data.note, data.deadline && formatShortDate(data.deadline)].filter(Boolean).join(' ');
 
   const submit = async (e) => {
     e.preventDefault();
+
+    // Chặn sớm cho khách sửa ngay tại chỗ; máy chủ vẫn kiểm lại lần nữa.
+    const digits = form.phone.replace(/\D/g, '');
+    if (data.askPhone && digits && (digits.length < 8 || digits.length > 15)) {
+      setError('Số điện thoại chưa đúng, bạn kiểm tra lại nhé.');
+      setState('error');
+      return;
+    }
+
     setState('sending');
     setError('');
     try {
-      await sendRsvp({ ...form, attending: form.attending === 'yes', pickup: showPickup ? form.pickup : '' });
+      await sendRsvp({
+        ...form,
+        phone: data.askPhone ? form.phone : '',
+        attending: form.attending === 'yes',
+        pickup: showPickup ? form.pickup : ''
+      });
       setState('done');
     } catch (err) {
       setError(err.message);
@@ -76,6 +94,21 @@ export default function RsvpForm({ data = {} }) {
         <span>Tên của bạn *</span>
         <input value={form.name} onChange={update('name')} required placeholder="Nguyễn Văn A" />
       </label>
+
+      {data.askPhone && (
+        <label className="field">
+          <span>Số điện thoại{phoneRequired ? ' *' : ''}</span>
+          <input
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={form.phone}
+            onChange={update('phone')}
+            required={phoneRequired}
+            placeholder="0912 345 678"
+          />
+        </label>
+      )}
 
       {data.askAttendance && (
         <div className="field">

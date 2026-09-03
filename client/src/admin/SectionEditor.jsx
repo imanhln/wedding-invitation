@@ -305,6 +305,20 @@ export default function SectionEditor({ section, onChange }) {
               onChange={(v) => set({ askSide: v })}
             />
             <Toggle
+              label="Hỏi số điện thoại"
+              value={section.askPhone}
+              onChange={(v) => set({ askPhone: v })}
+              hint="Số khách để lại hiện ở tab Khách mời (bấm để gọi) và trong file CSV."
+            />
+            {section.askPhone && (
+              <Toggle
+                label="Bắt buộc nhập số điện thoại"
+                value={section.phoneRequired}
+                onChange={(v) => set({ phoneRequired: v })}
+                hint="Chỉ bắt buộc với khách chọn sẽ tham dự; khách báo bận vẫn gửi được."
+              />
+            )}
+            <Toggle
               label="Hỏi điểm đón xe"
               value={section.askPickup}
               onChange={(v) => set({ askPickup: v })}
