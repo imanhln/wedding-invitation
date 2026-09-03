@@ -87,10 +87,19 @@ export function MusicPreview({ url }) {
 
   if (source.type === 'youtube') {
     return (
-      <a className="a-yt-preview" href={source.url} target="_blank" rel="noreferrer">
-        <img src={`https://img.youtube.com/vi/${source.id}/mqdefault.jpg`} alt="" />
-        <span>Video YouTube · {source.id}</span>
-      </a>
+      <>
+        <a className="a-yt-preview" href={source.url} target="_blank" rel="noreferrer">
+          <img src={`https://img.youtube.com/vi/${source.id}/mqdefault.jpg`} alt="" />
+          <span>Video YouTube · {source.id}</span>
+        </a>
+        <span className="a-media-warn">
+          Khách mở thiệp <b>từ Zalo trên iPhone sẽ không nghe được</b>: trình duyệt trong Zalo
+          bung video YouTube ra toàn màn hình, nên thiệp phải tự tắt nhạc ở những máy đó.
+          Muốn ai cũng nghe được (và nghe tiếp cả khi tắt màn hình) thì tải file .mp3 lên —
+          hoặc chạy <code>npm run music:from-youtube -- &lt;link&gt;</code> để lấy phần tiếng của
+          video này thành file và gán vào đây.
+        </span>
+      </>
     );
   }
 

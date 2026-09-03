@@ -129,6 +129,31 @@ export function youtubeId(raw) {
   return m ? m[1] : '';
 }
 
+/* --------- Máy nào KHÔNG dùng được nhạc YouTube (phải im lặng) -----------
+   Trình duyệt nhúng trong app (Zalo, Messenger, Facebook...) trên iPhone là
+   WKWebView. Nếu app không bật allowsInlineMediaPlayback thì iOS bung MỌI video
+   sang trình phát toàn màn hình của hệ thống — kể cả video của iframe nhạc ẩn.
+   Cú bung đó không đi qua Fullscreen API nên trang không bắt được để thoát:
+   khách bấm "Mở thiệp" là thấy video YouTube đè lên thiệp. Zalo bản này bật,
+   bản kia không, nên "máy bị máy không".
+
+   Không chặn được thì né: ở đúng nhóm máy này coi như không có nhạc — thà im
+   lặng còn hơn ném video vào mặt khách. Muốn ai cũng nghe được thì dùng .mp3. */
+export function youtubeAudioBlocked() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+
+  const isIOS = /iP(hone|od|ad)/.test(ua)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS khai là Mac
+  if (!isIOS) return false;
+
+  /* Trình duyệt thật trên iOS (Safari, Chrome/CriOS, Firefox/FxiOS) đều có token
+     "Safari/"; WKWebView nhúng trong app thì không — đó là dấu hiệu chắc nhất,
+     kèm tên vài app hay được dùng để gửi thiệp. */
+  return !/Safari\//.test(ua)
+    || /\b(Zalo|FBAN|FBAV|FB_IAB|Instagram|Line|MicroMessenger)\b/i.test(ua);
+}
+
 /**
  * Phân loại link nhạc.
  * -> { type: 'youtube', id } | { type: 'file', url } | { type: 'page', url } | null
@@ -138,7 +163,10 @@ export function parseMusicSource(raw) {
   if (!url) return null;
 
   const id = youtubeId(url);
-  if (id) return { type: 'youtube', id, url: `https://www.youtube.com/watch?v=${id}` };
+  if (id) {
+    // blocked: máy này bật nhạc YouTube lên là văng video toàn màn hình
+    return { type: 'youtube', id, url: `https://www.youtube.com/watch?v=${id}`, blocked: youtubeAudioBlocked() };
+  }
 
   // File tự tải lên (/uploads/...) hoặc link có đuôi file nhạc
   if (url.startsWith('/') || url.startsWith('data:audio') || url.startsWith('blob:')) {

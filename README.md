@@ -255,6 +255,28 @@ mặc định rồi lưu lại nguyên cục, nên lúc ghi xuống `normalizeCo
 định ra khỏi ô nhạc — có vậy "để trống = dùng mặc định" mới không bị đóng đinh sau
 lần Lưu đầu tiên.
 
+**Link YouTube làm nhạc nền — phải đổi sang file**: iframe YouTube phát được nhạc,
+nhưng trình duyệt nhúng trong app (Zalo, Messenger...) trên iPhone bung mọi video ra
+trình phát toàn màn hình của hệ thống, khách bấm "Mở thiệp" là thấy video đè lên thiệp.
+Cú bung đó không đi qua Fullscreen API nên trang không chặn được; thiệp chỉ còn cách
+nhận diện đúng nhóm máy đó (`youtubeAudioBlocked()` trong `client/src/utils.js`) và tắt
+nhạc để khách khỏi bị video nhảy vào mặt. Muốn ai cũng nghe được thì lấy phần tiếng của
+video ra thành file:
+
+```bash
+winget install yt-dlp.yt-dlp ffmpeg              # cài 1 lần (ffmpeg chỉ cần nếu muốn .mp3)
+npm run music:from-youtube -- "https://youtu.be/xxxxxxxxxxx"
+```
+
+Script tải audio, lưu vào đúng kho của site rồi gán luôn vào ô nhạc trong /admin. Thêm
+`--clip 15-105` để bỏ đoạn đầu, `--bitrate 96` cho file nhẹ, `--no-apply` nếu chỉ muốn
+lấy link mà chưa sửa nội dung. Ghi vào kho nào là do biến môi trường quyết định giống
+lúc chạy server: không có `BLOB_READ_WRITE_TOKEN` thì xuống `server/uploads`, có token
+thì lên Blob của site thật — khi đó nhớ đặt đúng cả `SITE_ID` và `DATA_SECRET` (để trong
+`.env` ở gốc repo là script tự đọc). `DEFAULT_MUSIC_URL` trong `server/defaultContent.js`
+cũng đang là link YouTube, nên đổi thành link file đã tải nếu muốn bài mặc định nghe được
+ở mọi máy.
+
 **Ảnh**: nên nén ảnh album xuống dưới 400KB mỗi ảnh (squoosh.app) để thiệp mở nhanh trên 4G.
 
 ## API

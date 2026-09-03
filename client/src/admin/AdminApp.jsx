@@ -366,7 +366,7 @@ function MediaTab({ content, update }) {
           value={content.music.url}
           onChange={(v) => setMusic({ url: v })}
           placeholder="hoặc dán link YouTube / link file .mp3"
-          hint="Dùng được: file .mp3 tải lên (nên dưới 8MB), link trực tiếp tới file nhạc, hoặc link YouTube (vd. https://youtu.be/xxxxxxxxxxx). Không dùng được link trang nhaccuatui, Zing MP3, Spotify vì đó là trang web, không phải file nhạc."
+          hint="Dùng được: file .mp3 tải lên (nên dưới 8MB), link trực tiếp tới file nhạc, hoặc link YouTube (vd. https://youtu.be/xxxxxxxxxxx). Nên ưu tiên file .mp3: link YouTube không phát được cho khách mở thiệp từ Zalo trên iPhone, và không chạy tiếp khi khách tắt màn hình. Không dùng được link trang nhaccuatui, Zing MP3, Spotify vì đó là trang web, không phải file nhạc."
         />
         <Range label="Âm lượng" value={Math.round((content.music.volume ?? 0.6) * 100)} onChange={(v) => setMusic({ volume: v / 100 })} suffix="%" />
         <Toggle label="Tự phát khi mở thiệp" value={content.music.autoPlayOnOpen} onChange={(v) => setMusic({ autoPlayOnOpen: v })} />

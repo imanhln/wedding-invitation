@@ -60,7 +60,18 @@ function createAudioIframe(videoId) {
   iframe.tabIndex = -1;
   iframe.setAttribute('aria-hidden', 'true');
   iframe.setAttribute('frameborder', '0');
-  iframe.setAttribute('allow', 'autoplay; encrypted-media'); // KHÔNG có fullscreen / PiP
+  // Permissions Policy: chỉ xin quyền tự phát, và CHẶN THẲNG toàn màn hình lẫn
+  // picture-in-picture thay vì chỉ "không xin" — trình duyệt nào coi mặc định
+  // là được phép thì vẫn bị chặn.
+  iframe.allowFullscreen = false;
+  iframe.setAttribute('allow', "autoplay; encrypted-media; fullscreen 'none'; picture-in-picture 'none'");
+
+  /* Hộp cát: iframe không được mở tab mới, không được đổi địa chỉ trang cha, và
+     không được gọi trình phát ngoài (app YouTube). Đây là đường còn lại khiến
+     khách đang xem thiệp bỗng nhảy sang video. `allow-scripts allow-same-origin`
+     là mức tối thiểu để player YouTube + enablejsapi còn chạy được; hai quyền
+     này chỉ áp cho chính origin youtube.com nên không nới lỏng gì cho trang mình. */
+  iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
   return iframe;
 }
 
@@ -87,6 +98,7 @@ export default function useMusic(url, volume = 0.6, meta = {}) {
   const volumeRef = useRef(volume);
   const wantPlayRef = useRef(false); // bấm mở thiệp khi player YouTube chưa sẵn sàng
   const wantPlayingRef = useRef(false); // khách MUỐN nghe nhạc hay đã tự tắt
+  const fsEscapesRef = useRef(0); // số lần phải đạp video YouTube ra khỏi toàn màn hình
 
   volumeRef.current = volume;
 
@@ -94,7 +106,8 @@ export default function useMusic(url, volume = 0.6, meta = {}) {
   useEffect(() => {
     setPlaying(false);
     wantPlayRef.current = false;
-    if (source?.type !== 'youtube') return undefined;
+    fsEscapesRef.current = 0;
+    if (source?.type !== 'youtube' || source.blocked) return undefined;
 
     let cancelled = false;
 
@@ -138,13 +151,27 @@ export default function useMusic(url, volume = 0.6, meta = {}) {
      Nếu trình duyệt nào vẫn cố đẩy iframe nhạc lên toàn màn hình thì thoát
      ngay, để khách thấy thiệp chứ không phải video YouTube. */
   useEffect(() => {
-    if (source?.type !== 'youtube') return undefined;
+    if (source?.type !== 'youtube' || source.blocked) return undefined;
 
     const onFullscreen = () => {
       const el = document.fullscreenElement || document.webkitFullscreenElement;
       if (!el || !hostRef.current?.contains(el)) return;
       const exit = document.exitFullscreen || document.webkitExitFullscreen;
       try { exit?.call(document); } catch { /* trình duyệt từ chối, bỏ qua */ }
+
+      /* Có máy đẩy lại toàn màn hình ngay sau khi thoát. Dừng nhạc một nhịp rồi
+         phát tiếp: video mất chỗ bám, khách vẫn ở lại thiệp và vẫn có nhạc.
+         Nếu máy cứ đẩy lại (2 lần) thì thôi hẳn nhạc — thà im lặng còn hơn để
+         video nhấp nháy đè lên thiệp; khách muốn nghe thì bấm nút nhạc. */
+      const player = ytRef.current;
+      try { player?.pauseVideo?.(); } catch { /* player đã huỷ */ }
+      setPlaying(false);
+
+      fsEscapesRef.current += 1;
+      if (fsEscapesRef.current > 2 || !wantPlayingRef.current) return;
+      setTimeout(() => {
+        try { ytRef.current?.playVideo?.(); } catch { /* player đã huỷ */ }
+      }, 250);
     };
 
     document.addEventListener('fullscreenchange', onFullscreen);
@@ -165,6 +192,7 @@ export default function useMusic(url, volume = 0.6, meta = {}) {
   const play = useCallback(() => {
     if (!source) return;
     wantPlayingRef.current = true;
+    fsEscapesRef.current = 0;
 
     if (source.type === 'page') {
       console.warn('[nhạc] Đây là link trang nghe nhạc, không phải file nhạc nên không phát được:', source.url);
@@ -172,6 +200,8 @@ export default function useMusic(url, volume = 0.6, meta = {}) {
     }
 
     if (source.type === 'youtube') {
+      // Máy bung video toàn màn hình (iPhone mở từ Zalo) — xem youtubeAudioBlocked().
+      if (source.blocked) return;
       const player = ytRef.current;
       if (player?.playVideo) {
         player.setVolume(Math.round(volumeRef.current * 100));
@@ -272,7 +302,7 @@ export default function useMusic(url, volume = 0.6, meta = {}) {
 
   return {
     source,
-    available: !!source && source.type !== 'page',
+    available: !!source && source.type !== 'page' && !source.blocked,
     playing,
     play,
     pause,

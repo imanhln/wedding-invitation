@@ -159,7 +159,7 @@ export default function InvitationPage() {
           onError={music.onAudioError}
         />
       )}
-      {music.source?.type === 'youtube' && <div ref={music.hostRef} className="yt-audio" aria-hidden="true" />}
+      {music.source?.type === 'youtube' && !music.source.blocked && <div ref={music.hostRef} className="yt-audio" aria-hidden="true" />}
 
       {/* Chỉ khởi động sau khi animation vào trang (contentIn 1.1s) chạy xong
           và luồng chính đã rảnh — bật cùng lúc thì trang bị giật. */}

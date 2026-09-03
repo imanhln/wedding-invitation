@@ -1,11 +1,13 @@
 import Reveal from "../components/Reveal.jsx";
+import DateBlock from "../components/DateBlock.jsx";
 import { guestFromUrl, splitDate } from "../utils.js";
 
 /**
  * Thiệp mời — Figma node 1:57 (panel đỏ 560x848):
  * tiêu đề, hai cột ông bà ngăn bởi vạch dọc, dòng báo tin,
  * tên cô dâu chú rể (EB Garamond 36), nơi cử hành,
- * giờ + thứ, rồi "20 | THÁNG 09 / 2026" và dòng âm lịch.
+ * rồi khối ngày "CHỦ NHẬT | 20 | 09:00" (components/DateBlock.jsx)
+ * và dòng âm lịch.
  */
 export default function InvitationSection({ data, content }) {
   const guest = guestFromUrl();
@@ -72,27 +74,14 @@ export default function InvitationSection({ data, content }) {
           <p className="panel-venue-address">{data.addressLine}</p>
         )}
 
-        {(data.eventTime || parts) && (
-          <div className="panel-timerow">
-            {data.eventTime && <span>Vào lúc {data.eventTime}</span>}
-            {/* Figma 17:18 — ngôi sao 10px ngăn giữa giờ và thứ */}
-            {data.eventTime && parts && (
-              <i className="panel-star" aria-hidden="true" />
-            )}
-            {parts && <span>{parts.weekday}</span>}
-          </div>
-        )}
-
         {parts && (
-          <div className="panel-daterow">
-            <span className="dr-day">{parts.day}</span>
-            <span className="dr-sep" aria-hidden="true" />
-            <span className="dr-my">
-              Tháng {parts.month}
-              <br />
-              {parts.year}
-            </span>
-          </div>
+          <DateBlock
+            weekday={parts.weekday}
+            time={data.eventTime}
+            day={parts.day}
+            month={parts.month}
+            year={parts.year}
+          />
         )}
 
         {data.lunarLine && <p className="panel-lunar">{data.lunarLine}</p>}

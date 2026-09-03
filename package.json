@@ -11,6 +11,7 @@
     "install:all": "npm install && npm install --prefix client",
     "dev": "concurrently -n server,client -c magenta,cyan \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
+    "music:from-youtube": "node server/scripts/music-from-youtube.mjs",
     "start": "node server/index.js"
   },
   "dependencies": {

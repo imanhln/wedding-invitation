@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Reveal from '../components/Reveal.jsx';
 import RsvpForm from '../components/RsvpForm.jsx';
+import DateBlock from '../components/DateBlock.jsx';
 import { useCountdown } from '../hooks/useReveal.js';
 import { splitDate, toMapUrl } from '../utils.js';
 
@@ -23,7 +24,7 @@ function buildMonth(date) {
 
 /**
  * Thông tin tiệc cưới — Figma node 1:115 (panel đỏ 560x875):
- * tiêu đề, dòng dẫn, thứ + giờ, "19 | THÁNG 09 / 2026", âm lịch,
+ * tiêu đề, dòng dẫn, khối ngày "THỨ BẢY | 19 | 16:00" (DateBlock), âm lịch,
  * hai mốc đón khách / khai tiệc, lịch tháng nền kem có trái tim
  * đánh dấu ngày cưới, cuối cùng là nút "Mở bản đồ" (mở Google Maps ở tab mới,
  * thay cho link "Thêm vào lịch" của bản cũ) và nút "Xác nhận tham dự" mở modal
@@ -67,24 +68,13 @@ export default function CalendarSection({ data, content }) {
         {data.script && <p className="panel-script">{data.script}</p>}
 
         {parts && (
-          <div className="panel-timerow">
-            <span>{parts.weekday}</span>
-            {/* Figma 17:21 — ngôi sao 9px ngăn giữa thứ và giờ */}
-            <i className="panel-star" aria-hidden="true" />
-            <span>{timeOnly}</span>
-          </div>
-        )}
-
-        {parts && (
-          <div className="panel-daterow">
-            <span className="dr-day">{parts.day}</span>
-            <span className="dr-sep" aria-hidden="true" />
-            <span className="dr-my">
-              Tháng {parts.month}
-              <br />
-              {parts.year}
-            </span>
-          </div>
+          <DateBlock
+            weekday={parts.weekday}
+            time={timeOnly}
+            day={parts.day}
+            month={parts.month}
+            year={parts.year}
+          />
         )}
 
         {data.lunarText && <p className="panel-lunar">{data.lunarText}</p>}
