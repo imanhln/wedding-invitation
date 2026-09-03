@@ -15,13 +15,18 @@ export function formatShortDate(value) {
   return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 
+/**
+ * Tách ngày cho cụm ngày lớn trong panel ("19 | Tháng 9 / 2026").
+ * `day` đệm 0 vì đứng một mình làm con số lớn; `month` thì KHÔNG đệm — đi liền
+ * chữ "Tháng" nên "Tháng 9" đọc tự nhiên hơn "Tháng 09".
+ */
 export function splitDate(value) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return null;
   return {
     weekday: WEEKDAYS[d.getDay()],
     day: String(d.getDate()).padStart(2, '0'),
-    month: String(d.getMonth() + 1).padStart(2, '0'),
+    month: String(d.getMonth() + 1),
     year: d.getFullYear()
   };
 }

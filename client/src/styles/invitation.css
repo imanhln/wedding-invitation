@@ -509,6 +509,14 @@
    Figma: 560px, nền #511419, bo góc 10–13, phủ vân giấy paper.webp.     */
 
 .panel {
+  /* Khoảng từ tâm panel tới rìa chữ, dùng chung cho dòng giờ (.panel-timerow)
+     và dòng ngày (.panel-daterow) để chữ hai dòng nằm đúng cùng một cột.
+     Vật ngăn giữa hai vế của mỗi dòng lại khác cỡ — ngôi sao 10px so với vạch
+     dọc 1px — nên gap của từng dòng phải trừ đi NỬA bề rộng vật ngăn của chính
+     nó. Gõ cứng cùng một con số gap cho cả hai dòng là chữ ở dòng ngôi sao bị
+     đẩy ra xa thêm 2.5px mỗi bên, đủ để nhìn ra hai dòng lệch cột. */
+  --axis-inset: 16.5px;
+
   position: relative;
   width: min(var(--panel-w), 100%);
   margin: 0 auto;
@@ -893,6 +901,26 @@
   color: rgba(236, 228, 216, 0.72);
 }
 
+/* Ngôi sao ngăn hai vế cũng là một trục như vạch dọc ở .panel-daterow ngay
+   dưới, nên phải nằm cùng tâm panel — canh giữa theo tổng bề rộng thì vế trái
+   dài hơn ("THỨ BẢY" vs "16:00") sẽ đẩy sao lệch phải ~14px, đứng cạnh vạch
+   dọc thành ra so le. Chỉ đổi sang grid khi thật sự có ngôi sao: dòng này có
+   lúc chỉ còn một vế (xem InvitationSection), lúc đó flex canh giữa mới đúng. */
+.panel-timerow:has(.panel-star) {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: calc(var(--axis-inset) - 5px); /* nửa ngôi sao 10px */
+}
+
+.panel-timerow:has(.panel-star) > :first-child {
+  justify-self: end;
+}
+
+.panel-timerow:has(.panel-star) > :last-child {
+  justify-self: start;
+}
+
 /* Figma 17:18 (1:57) / 17:21 (1:115) — ngôi sao 5 cánh 9-10px ngăn hai vế */
 .panel-star {
   width: 10px;
@@ -914,28 +942,40 @@
 }
 
 /* "20 | THÁNG 09 / 2026" */
+/* Vạch dọc là trục thị giác của cụm này nên nó phải nằm đúng tâm panel —
+   thẳng hàng với ngôi sao ở dòng giờ phía trên và dòng âm lịch phía dưới.
+   Canh giữa theo tổng bề rộng (flex) không làm được: khối "THÁNG 9 / 2026"
+   rộng gấp đôi con số ngày nên kéo vạch lệch sang trái gần 30px. Grid với hai
+   cột 1fr đối xứng đặt cột giữa (chính là vạch) đúng tâm, bất kể hai bên rộng
+   bao nhiêu. */
 .panel-daterow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  gap: calc(var(--axis-inset) - 0.5px); /* nửa vạch dọc 1px */
   margin-top: 22px;
   color: var(--c-surface);
 }
 
+/* line-height khớp đúng chiều cao khối tháng/năm (2 dòng × 24px) để con số
+   ngày canh giữa chính xác so với hai dòng bên phải. */
 .panel-daterow .dr-day {
+  justify-self: end;
   font-size: 37px;
-  line-height: 46px;
+  line-height: 48px;
   font-weight: 300;
 }
 
+/* stretch thay cho chiều cao gõ tay: vạch luôn cao trọn cả hai dòng, đổi cỡ
+   chữ cũng không phải sửa lại con số ở đây. */
 .panel-daterow .dr-sep {
+  align-self: stretch;
   width: 1px;
-  height: 46px;
   background: rgba(236, 228, 216, 0.45);
 }
 
 .panel-daterow .dr-my {
+  justify-self: start;
   text-align: left;
   font-size: 15.6px;
   line-height: 24px;
@@ -2634,12 +2674,10 @@
     font-size: 26px;
     margin: 8px 0 4px;
   }
+  /* Chỉ hạ cỡ chữ; line-height vẫn phải khớp khối tháng/năm (48px) và vạch
+     tự cao theo nó nhờ align-self: stretch. */
   .panel-daterow .dr-day {
     font-size: 30px;
-    line-height: 38px;
-  }
-  .panel-daterow .dr-sep {
-    height: 38px;
   }
 
   .coverflow {
