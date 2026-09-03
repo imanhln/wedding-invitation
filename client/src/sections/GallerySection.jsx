@@ -165,12 +165,13 @@ export default function GallerySection({ data }) {
           <>
             <button type="button" className="cf-nav prev" onClick={() => go(-1)} aria-label="Ảnh trước">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <path d="M10 3 5 8l5 5" />
+                {/* x chạy 5,5 -> 10,5 để nét mũi tên đối xứng quanh tâm 8 */}
+                <path d="M10.5 3 5.5 8l5 5" />
               </svg>
             </button>
             <button type="button" className="cf-nav next" onClick={() => go(1)} aria-label="Ảnh sau">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <path d="M6 3l5 5-5 5" />
+                <path d="M5.5 3l5 5-5 5" />
               </svg>
             </button>
           </>

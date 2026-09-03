@@ -1325,19 +1325,35 @@
   transform: translate(-50%, -50%) translateX(420px) rotateY(-76deg) scale(0.45);
 }
 
+/* Mũi tên phải nằm ĐÚNG tâm vòng tròn.
+
+   Safari trên iOS vẫn tự đắp kiểu nút hệ thống + padding riêng vào <button>
+   (base.css chỉ reset `font` và `color`). Phần padding đó ăn vào khung 32px
+   vì box-sizing là border-box, nên ô canh giữa bên trong không còn trùng tâm
+   vòng tròn — trên iPhone đời mới thấy rõ mũi tên bị lệch. Phải tắt hẳn
+   appearance, xoá padding/margin, và bỏ line-height thừa.
+
+   Dùng flex thay grid: Safari canh giữa nội dung <button> bằng flex ổn định
+   hơn, grid trên nút từng bị chính nó bỏ qua ở vài phiên bản.            */
 .cf-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 6;
-  display: grid;
-  place-items: center;
+  -webkit-appearance: none;
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
+  margin: 0;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   background: rgba(11, 9, 8, 0.6);
   color: var(--c-bg);
+  line-height: 0;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -1351,7 +1367,10 @@
 .cf-nav.next {
   right: 8px;
 }
+/* `display: block` để svg không bị canh theo đường baseline chữ — nếu để
+   inline, Safari chừa thêm phần chân chữ bên dưới và mũi tên lệch lên. */
 .cf-nav svg {
+  display: block;
   width: 16px;
   height: 16px;
 }
