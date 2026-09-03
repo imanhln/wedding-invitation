@@ -19,14 +19,22 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-/** Khoảng cách vòng tròn: 0 = ảnh giữa, ±1 / ±2 = hai bên nghiêng dần. */
+/**
+ * Khoảng cách vòng tròn: 0 = ảnh giữa, ±1 / ±2 = hai bên nghiêng dần.
+ *
+ * Ngoài ±2 phải tách rõ TRÁI ('far-l') hay PHẢI ('far-r') chứ không gộp chung
+ * một tư thế: có tách thì ảnh rời vòng mới trôi tiếp ra đúng bên nó đang đi,
+ * thay vì bị kéo ngược vào giữa khung rồi mờ đi ngay trước mặt khách.
+ */
 function positionOf(i, active, total) {
   let diff = i - active;
   if (total > 4) {
     if (diff > total / 2) diff -= total;
     if (diff < -total / 2) diff += total;
   }
-  return Math.abs(diff) > 2 ? 'far' : String(diff);
+  if (diff > 2) return 'far-r';
+  if (diff < -2) return 'far-l';
+  return String(diff);
 }
 
 /* --------------------------- Chỉ nạp ảnh đang thấy -------------------------

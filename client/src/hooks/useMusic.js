@@ -73,8 +73,11 @@ function createAudioIframe(videoId) {
  *
  * Lưu ý: trình duyệt chỉ cho phát nhạc có tiếng khi xuất phát từ thao tác của
  * khách, nên play() luôn được gọi trong sự kiện bấm nút "Mở thiệp".
+ *
+ * `meta` ({ title, artist, artwork }) là tên bài hiện trên màn hình khoá —
+ * xem khối "Giữ nhạc chạy khi khách tắt màn hình" bên dưới.
  */
-export default function useMusic(url, volume = 0.6) {
+export default function useMusic(url, volume = 0.6, meta = {}) {
   const source = useMemo(() => parseMusicSource(url), [url]);
   const [playing, setPlaying] = useState(false);
 
@@ -83,6 +86,7 @@ export default function useMusic(url, volume = 0.6) {
   const ytRef = useRef(null);
   const volumeRef = useRef(volume);
   const wantPlayRef = useRef(false); // bấm mở thiệp khi player YouTube chưa sẵn sàng
+  const wantPlayingRef = useRef(false); // khách MUỐN nghe nhạc hay đã tự tắt
 
   volumeRef.current = volume;
 
@@ -160,6 +164,7 @@ export default function useMusic(url, volume = 0.6) {
   /* --------------------------------- Điều khiển ---------------------------- */
   const play = useCallback(() => {
     if (!source) return;
+    wantPlayingRef.current = true;
 
     if (source.type === 'page') {
       console.warn('[nhạc] Đây là link trang nghe nhạc, không phải file nhạc nên không phát được:', source.url);
@@ -185,6 +190,7 @@ export default function useMusic(url, volume = 0.6) {
 
   const pause = useCallback(() => {
     wantPlayRef.current = false;
+    wantPlayingRef.current = false;
     if (source?.type === 'youtube') ytRef.current?.pauseVideo?.();
     else audioRef.current?.pause();
     setPlaying(false);
@@ -194,6 +200,66 @@ export default function useMusic(url, volume = 0.6) {
     if (playing) pause();
     else play();
   }, [playing, pause, play]);
+
+  /* ------------- Giữ nhạc chạy khi khách tắt màn hình / chuyển app ---------
+     Điện thoại chỉ cho một trang chạy nhạc dưới nền khi nó đăng ký được một
+     "phiên phát nhạc" với hệ điều hành — tức là có TÊN BÀI để hiện lên màn
+     hình khoá. Trang nào chỉ gọi audio.play() suông thì iOS/Android coi là
+     tiếng phụ của trang web và cắt ngay khi màn hình tắt. Khai báo
+     mediaSession.metadata + hai nút play/pause là đủ để đổi cách hệ điều hành
+     nhìn nhận, và khách còn điều khiển được nhạc ngay trên màn hình khoá.
+
+     Chỉ áp dụng cho nguồn FILE. Nhạc YouTube nằm trong iframe của youtube.com,
+     phiên phát nhạc thuộc về iframe đó chứ không thuộc trang mình, nên không
+     có cách nào giữ nó chạy khi tắt màn hình — phải dùng file .mp3.        */
+  const { title: metaTitle, artist: metaArtist, artwork: metaArtwork } = meta;
+
+  useEffect(() => {
+    const ms = navigator.mediaSession;
+    if (!ms || source?.type !== 'file') return undefined;
+
+    if (window.MediaMetadata) {
+      ms.metadata = new window.MediaMetadata({
+        title: metaTitle || 'Nhạc nền',
+        artist: metaArtist || '',
+        artwork: metaArtwork ? [{ src: metaArtwork, sizes: '512x512' }] : []
+      });
+    }
+
+    // Nút play/pause trên màn hình khoá và tai nghe.
+    const actions = [['play', play], ['pause', pause]];
+    for (const [name, fn] of actions) {
+      try { ms.setActionHandler(name, fn); } catch { /* máy không hỗ trợ nút này */ }
+    }
+
+    return () => {
+      for (const [name] of actions) {
+        try { ms.setActionHandler(name, null); } catch { /* bỏ qua */ }
+      }
+      ms.metadata = null;
+    };
+  }, [source?.type, metaTitle, metaArtist, metaArtwork, play, pause]);
+
+  // Cho hệ điều hành biết đang phát hay đang dừng, để icon trên màn hình khoá đúng.
+  useEffect(() => {
+    if (navigator.mediaSession) navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+  }, [playing]);
+
+  /* Lưới an toàn: máy nào vẫn cắt nhạc lúc tắt màn hình thì nối lại ngay khi
+     khách mở lại trang, thay vì bắt bấm nút nhạc lần nữa. Chỉ nối khi khách
+     chưa tự tắt nhạc — `wantPlayingRef`. */
+  useEffect(() => {
+    if (source?.type !== 'file') return undefined;
+
+    const resume = () => {
+      if (document.visibilityState !== 'visible' || !wantPlayingRef.current) return;
+      const audio = audioRef.current;
+      if (audio?.paused) audio.play().catch(() => { /* máy chặn, chờ khách bấm */ });
+    };
+
+    document.addEventListener('visibilitychange', resume);
+    return () => document.removeEventListener('visibilitychange', resume);
+  }, [source?.type]);
 
   const onAudioError = useCallback(() => {
     setPlaying(false);

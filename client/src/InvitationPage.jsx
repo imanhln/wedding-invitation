@@ -96,7 +96,21 @@ export default function InvitationPage() {
 
   /* ---------------------------------- Nhạc --------------------------------- */
   const musicUrl = content?.music?.enabled ? content.music.url : '';
-  const music = useMusic(musicUrl, content?.music?.volume ?? 0.6);
+
+  /* Tên bài + ảnh hiện trên màn hình khoá điện thoại. Không chỉ để đẹp: có
+     khai báo thì hệ điều hành mới coi đây là một phiên phát nhạc thật và cho
+     chạy tiếp lúc tắt màn hình — xem ghi chú trong useMusic.js. */
+  const musicMeta = useMemo(() => {
+    const groom = content?.cover?.groomName || content?.couple?.groom?.shortName || '';
+    const bride = content?.cover?.brideName || content?.couple?.bride?.shortName || '';
+    return {
+      title: content?.meta?.title || 'Thiệp cưới',
+      artist: groom && bride ? `${groom} & ${bride}` : groom || bride,
+      artwork: content?.cover?.photo || content?.cover?.backgroundImage || content?.meta?.ogImage || ''
+    };
+  }, [content]);
+
+  const music = useMusic(musicUrl, content?.music?.volume ?? 0.6, musicMeta);
 
   /* ------------------------------- Mở thiệp -------------------------------- */
   const openInvitation = () => {
