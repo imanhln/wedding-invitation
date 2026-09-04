@@ -807,8 +807,8 @@
 
 .panel-note {
   margin-top: 41px;
-  font-size: 12.6px;
-  line-height: 19.5px;
+  font-size: 15.6px;
+  line-height: 23px;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--c-surface);
@@ -1023,8 +1023,8 @@
   margin-top: 28px;
   font-family: var(--f-body);
   font-weight: 400;
-  font-size: clamp(19px, 4.6vw, 25.6px);
-  line-height: 39px;
+  font-size: 20px;
+  line-height: 30px;
   text-transform: uppercase;
   color: var(--c-surface);
 }
@@ -2708,7 +2708,6 @@
   }
   .panel-script {
     margin-top: 18px;
-    line-height: 30px;
   }
   .panel-reception,
   .cal {
