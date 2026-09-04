@@ -47,10 +47,11 @@ export default function RsvpForm({ data = {} }) {
 
   const pickups = pickupsFor(data.pickupPoints, form.side);
 
-  // Số điện thoại, điểm đón và chuyện ở lại chỉ hỏi khách nhận sẽ đến — khách
-  // đã báo bận thì không cần liên lạc lại hay sắp xe.
+  // Số điện thoại, số người, điểm đón và chuyện ở lại chỉ hỏi khách nhận sẽ
+  // đến — khách đã báo bận thì không cần liên lạc lại hay sắp chỗ, sắp xe.
   const attendingNow = form.attending === 'yes';
   const showPhone = !!data.askPhone && attendingNow;
+  const showGuests = !!data.askGuestCount && attendingNow;
   const showPickup = data.askPickup && pickups.length > 0 && attendingNow;
   const showStay = !!data.askStay && attendingNow;
 
@@ -77,6 +78,7 @@ export default function RsvpForm({ data = {} }) {
         ...form,
         phone: showPhone ? form.phone : '',
         attending: form.attending === 'yes',
+        guests: showGuests ? form.guests : 1,
         pickup: showPickup ? form.pickup : '',
         stay: showStay ? form.stay : ''
       });
@@ -150,7 +152,7 @@ export default function RsvpForm({ data = {} }) {
         </div>
       )}
 
-      {data.askGuestCount && (
+      {showGuests && (
         <label className="field">
           <span>Số người tham dự</span>
           <input type="number" min="1" max="20" value={form.guests} onChange={update('guests')} />
