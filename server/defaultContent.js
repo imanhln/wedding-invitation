@@ -186,14 +186,14 @@ export const defaultContent = {
         {
           id: "pk1",
           side: "Cô dâu",
-          label: "Nhà gái - Thiệu Trung, Thanh Hoá",
+          label: "Nhà gái - Capital place, 29 Liễu Giai",
         },
         {
           id: "pk2",
           side: "Chú rể",
-          label: "Nhà trai - Thiệu Trung, Thanh Hoá",
+          label: "Nhà trai - Roman Plaza, Tố Hữu",
         },
-        { id: "pk3", side: "Cả hai", label: "Tự di chuyển tới nhà hàng" },
+        { id: "pk3", side: "Cả hai", label: "Tự di chuyển" },
       ],
       thankYouText:
         "Cảm ơn bạn rất nhiều! Hẹn gặp bạn trong ngày vui của chúng mình.",
