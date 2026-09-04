@@ -217,7 +217,7 @@ function normalizePhone(raw) {
 app.post(
   '/api/rsvp',
   wrap(async (req, res) => {
-    const { name, phone, attending, guests, side, pickup, message } = req.body || {};
+    const { name, phone, attending, guests, side, pickup, stay, message } = req.body || {};
     if (!name || !String(name).trim()) return res.status(400).json({ error: 'Vui lòng nhập tên của bạn' });
 
     const willAttend = attending === true || attending === 'yes';
@@ -242,6 +242,8 @@ app.post(
       guests: Number(guests) || 1,
       side: String(side || '').slice(0, 40),
       pickup: String(pickup || '').slice(0, 120),
+      // 'yes' = ở lại chơi, 'no' = về luôn, '' = không hỏi / khách báo bận.
+      stay: willAttend && (stay === 'yes' || stay === 'no') ? stay : '',
       message: String(message || '').slice(0, 500),
       createdAt: new Date().toISOString()
     });

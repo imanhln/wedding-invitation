@@ -305,6 +305,12 @@ export default function SectionEditor({ section, onChange }) {
               onChange={(v) => set({ askSide: v })}
             />
             <Toggle
+              label="Hỏi ở lại hay về luôn"
+              value={section.askStay}
+              onChange={(v) => set({ askStay: v })}
+              hint="Chỉ hiện với khách chọn sẽ tham dự; khách báo bận thì ẩn."
+            />
+            <Toggle
               label="Hỏi số điện thoại"
               value={section.askPhone}
               onChange={(v) => set({ askPhone: v })}
@@ -325,6 +331,29 @@ export default function SectionEditor({ section, onChange }) {
               hint="Ô chọn điểm đón hiện sẵn trong form; chọn bên khách xong thì danh sách lọc lại theo bên đó."
             />
           </div>
+
+          {section.askStay && (
+            <div className="a-row">
+              <Text
+                label="Câu hỏi ở lại / về luôn"
+                value={section.stayLabel}
+                onChange={(v) => set({ stayLabel: v })}
+                placeholder="Sau tiệc bạn..."
+              />
+              <Text
+                label="Chữ cho lựa chọn ở lại"
+                value={section.stayYesText}
+                onChange={(v) => set({ stayYesText: v })}
+                placeholder="Ở lại chơi cùng chúng mình"
+              />
+              <Text
+                label="Chữ cho lựa chọn về luôn"
+                value={section.stayNoText}
+                onChange={(v) => set({ stayNoText: v })}
+                placeholder="Về luôn sau tiệc"
+              />
+            </div>
+          )}
 
           {section.askPickup && (
             <>

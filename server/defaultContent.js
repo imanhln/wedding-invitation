@@ -170,6 +170,12 @@ export const defaultContent = {
       askAttendance: true,
       askGuestCount: true,
       askSide: true,
+      // Khách nhận sẽ đến thì hỏi thêm: ở lại chơi hay về luôn sau tiệc, để
+      // chủ tiệc biết trước mà sắp chỗ nghỉ / xe về.
+      askStay: true,
+      stayLabel: "Sau tiệc bạn...",
+      stayYesText: "Ở lại chơi cùng chúng mình",
+      stayNoText: "Về luôn sau tiệc",
       // Số điện thoại để chủ tiệc liên lạc khi cần (đổi giờ, sắp xe đón...).
       askPhone: true,
       phoneRequired: true,

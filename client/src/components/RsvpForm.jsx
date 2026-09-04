@@ -18,6 +18,7 @@ function pickupsFor(points, side) {
  * Form xác nhận tham dự — hiển thị trong modal mở từ panel thông tin
  * tiệc cưới (CalendarSection).
  * `data`: { askAttendance, askGuestCount, askSide, askPhone, phoneRequired,
+ *           askStay, stayLabel, stayYesText, stayNoText,
  *           askPickup, pickupLabel, pickupPoints, note, deadline, thankYouText }
  */
 export default function RsvpForm({ data = {} }) {
@@ -28,6 +29,7 @@ export default function RsvpForm({ data = {} }) {
     guests: 1,
     side: '',
     pickup: '',
+    stay: 'yes',
     message: ''
   });
   const [state, setState] = useState('idle'); // idle | sending | done | error
@@ -44,10 +46,15 @@ export default function RsvpForm({ data = {} }) {
   };
 
   const pickups = pickupsFor(data.pickupPoints, form.side);
-  const showPickup = data.askPickup && pickups.length > 0;
 
-  // Chỉ đòi số của khách sẽ đến — khách đã báo bận thì không cần liên lạc lại.
-  const phoneRequired = !!data.askPhone && !!data.phoneRequired && form.attending === 'yes';
+  // Số điện thoại, điểm đón và chuyện ở lại chỉ hỏi khách nhận sẽ đến — khách
+  // đã báo bận thì không cần liên lạc lại hay sắp xe.
+  const attendingNow = form.attending === 'yes';
+  const showPhone = !!data.askPhone && attendingNow;
+  const showPickup = data.askPickup && pickups.length > 0 && attendingNow;
+  const showStay = !!data.askStay && attendingNow;
+
+  const phoneRequired = showPhone && !!data.phoneRequired;
 
   // Ghi chú = câu chữ trong trang quản trị + hạn phản hồi đặt riêng bằng ô ngày
   const note = [data.note, data.deadline && formatShortDate(data.deadline)].filter(Boolean).join(' ');
@@ -57,7 +64,7 @@ export default function RsvpForm({ data = {} }) {
 
     // Chặn sớm cho khách sửa ngay tại chỗ; máy chủ vẫn kiểm lại lần nữa.
     const digits = form.phone.replace(/\D/g, '');
-    if (data.askPhone && digits && (digits.length < 8 || digits.length > 15)) {
+    if (showPhone && digits && (digits.length < 8 || digits.length > 15)) {
       setError('Số điện thoại chưa đúng, bạn kiểm tra lại nhé.');
       setState('error');
       return;
@@ -68,9 +75,10 @@ export default function RsvpForm({ data = {} }) {
     try {
       await sendRsvp({
         ...form,
-        phone: data.askPhone ? form.phone : '',
+        phone: showPhone ? form.phone : '',
         attending: form.attending === 'yes',
-        pickup: showPickup ? form.pickup : ''
+        pickup: showPickup ? form.pickup : '',
+        stay: showStay ? form.stay : ''
       });
       setState('done');
     } catch (err) {
@@ -95,7 +103,23 @@ export default function RsvpForm({ data = {} }) {
         <input value={form.name} onChange={update('name')} required placeholder="Nguyễn Văn A" />
       </label>
 
-      {data.askPhone && (
+      {data.askAttendance && (
+        <div className="field">
+          <span>Bạn sẽ tham dự chứ?</span>
+          <div className="choice-row">
+            <label className={`choice ${form.attending === 'yes' ? 'is-active' : ''}`}>
+              <input type="radio" name="attending" value="yes" checked={form.attending === 'yes'} onChange={update('attending')} />
+              <span>Có, mình sẽ đến</span>
+            </label>
+            <label className={`choice ${form.attending === 'no' ? 'is-active' : ''}`}>
+              <input type="radio" name="attending" value="no" checked={form.attending === 'no'} onChange={update('attending')} />
+              <span>Rất tiếc, mình bận</span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {showPhone && (
         <label className="field">
           <span>Số điện thoại{phoneRequired ? ' *' : ''}</span>
           <input
@@ -110,17 +134,17 @@ export default function RsvpForm({ data = {} }) {
         </label>
       )}
 
-      {data.askAttendance && (
+      {showStay && (
         <div className="field">
-          <span>Bạn sẽ tham dự chứ?</span>
+          <span>{data.stayLabel || 'Sau tiệc bạn...'}</span>
           <div className="choice-row">
-            <label className={`choice ${form.attending === 'yes' ? 'is-active' : ''}`}>
-              <input type="radio" name="attending" value="yes" checked={form.attending === 'yes'} onChange={update('attending')} />
-              <span>Có, mình sẽ đến</span>
+            <label className={`choice ${form.stay === 'yes' ? 'is-active' : ''}`}>
+              <input type="radio" name="stay" value="yes" checked={form.stay === 'yes'} onChange={update('stay')} />
+              <span>{data.stayYesText || 'Ở lại chơi cùng chúng mình'}</span>
             </label>
-            <label className={`choice ${form.attending === 'no' ? 'is-active' : ''}`}>
-              <input type="radio" name="attending" value="no" checked={form.attending === 'no'} onChange={update('attending')} />
-              <span>Rất tiếc, mình bận</span>
+            <label className={`choice ${form.stay === 'no' ? 'is-active' : ''}`}>
+              <input type="radio" name="stay" value="no" checked={form.stay === 'no'} onChange={update('stay')} />
+              <span>{data.stayNoText || 'Về luôn sau tiệc'}</span>
             </label>
           </div>
         </div>

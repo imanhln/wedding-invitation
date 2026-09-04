@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { adminRsvp, deleteRsvp, adminWishes, toggleWish, deleteWish } from '../api.js';
 
+const STAY_TEXT = { yes: 'Ở lại', no: 'Về luôn' };
+
 export default function GuestsTab() {
   const [tab, setTab] = useState('rsvp');
   const [rsvp, setRsvp] = useState([]);
@@ -18,12 +20,13 @@ export default function GuestsTab() {
     total: rsvp.length,
     yes: rsvp.filter((r) => r.attending).length,
     no: rsvp.filter((r) => !r.attending).length,
-    people: rsvp.filter((r) => r.attending).reduce((sum, r) => sum + (Number(r.guests) || 1), 0)
+    people: rsvp.filter((r) => r.attending).reduce((sum, r) => sum + (Number(r.guests) || 1), 0),
+    stay: rsvp.filter((r) => r.attending && r.stay === 'yes').length
   };
 
   const exportCsv = () => {
     const rows = [
-      ['Tên', 'Điện thoại', 'Tham dự', 'Số người', 'Khách của', 'Điểm đón', 'Lời nhắn', 'Thời gian'],
+      ['Tên', 'Điện thoại', 'Tham dự', 'Số người', 'Khách của', 'Điểm đón', 'Sau tiệc', 'Lời nhắn', 'Thời gian'],
       ...rsvp.map((r) => [
         r.name,
         // Tab ở đầu để Excel đọc là chữ, giữ số 0 đứng đầu ("0912..." chứ
@@ -33,6 +36,7 @@ export default function GuestsTab() {
         r.guests,
         r.side,
         r.pickup || '',
+        STAY_TEXT[r.stay] || '',
         (r.message || '').replace(/[\r\n]+/g, ' '),
         new Date(r.createdAt).toLocaleString('vi-VN')
       ])
@@ -57,6 +61,7 @@ export default function GuestsTab() {
           <div className="a-stat"><b>{stats.total}</b><span>Phản hồi</span></div>
           <div className="a-stat"><b>{stats.yes}</b><span>Sẽ tham dự</span></div>
           <div className="a-stat"><b>{stats.people}</b><span>Tổng số người</span></div>
+          <div className="a-stat"><b>{stats.stay}</b><span>Ở lại sau tiệc</span></div>
           <div className="a-stat"><b>{stats.no}</b><span>Không đến được</span></div>
           <div className="a-stat"><b>{wishes.length}</b><span>Lời chúc</span></div>
         </div>
@@ -81,7 +86,7 @@ export default function GuestsTab() {
               <thead>
                 <tr>
                   <th>Tên</th><th>Điện thoại</th><th>Tham dự</th><th>Số người</th><th>Khách của</th>
-                  <th>Điểm đón</th><th>Lời nhắn</th><th>Thời gian</th><th />
+                  <th>Điểm đón</th><th>Sau tiệc</th><th>Lời nhắn</th><th>Thời gian</th><th />
                 </tr>
               </thead>
               <tbody>
@@ -93,6 +98,7 @@ export default function GuestsTab() {
                     <td>{r.guests}</td>
                     <td>{r.side}</td>
                     <td>{r.pickup}</td>
+                    <td>{STAY_TEXT[r.stay] || '—'}</td>
                     <td className="a-td-msg">{r.message}</td>
                     <td>{new Date(r.createdAt).toLocaleString('vi-VN')}</td>
                     <td>
@@ -104,7 +110,7 @@ export default function GuestsTab() {
                     </td>
                   </tr>
                 ))}
-                {!rsvp.length && <tr><td colSpan={9} className="a-empty">Chưa có phản hồi nào.</td></tr>}
+                {!rsvp.length && <tr><td colSpan={10} className="a-empty">Chưa có phản hồi nào.</td></tr>}
               </tbody>
             </table>
           </div>
