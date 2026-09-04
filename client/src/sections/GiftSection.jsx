@@ -82,6 +82,8 @@ export default function GiftSection({ data }) {
             </header>
 
             <div className="gift-modal-body">
+              {data.note && <p className="gift-modal-note">{data.note}</p>}
+
               {(data.accounts || []).map((acc, i) => (
                 <div className="gift-acc" key={acc.id || i}>
                   <span className="gift-acc-side">{acc.side}</span>

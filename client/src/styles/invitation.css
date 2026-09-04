@@ -1060,6 +1060,12 @@
   color: var(--c-surface);
 }
 
+/* Nơi tổ chức tiệc: dùng lại .panel-venue của thiệp mời, chỉ hạ khoảng cách
+   trên vì ở đây nó đi liền sau dòng âm lịch chứ không phải sau tên hai người. */
+.block-calendar .panel-venue {
+  margin-top: 30px;
+}
+
 /* Đếm ngược (không có trong Figma, giữ lại cho phần tuỳ chọn) */
 .panel-countdown {
   display: grid;
@@ -2176,6 +2182,18 @@
   }
 }
 
+/* Dòng "mừng cưới là tuỳ tâm..." — nằm ngang hết hộp quà, kể cả khi phần
+   tài khoản đã tách thành hai cột. */
+.gift-modal-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 20px;
+  font-style: italic;
+  text-align: center;
+  color: var(--c-muted);
+}
+
 .gift-acc {
   text-align: center;
   display: grid;
@@ -2695,6 +2713,9 @@
   .panel-reception,
   .cal {
     margin-top: 28px;
+  }
+  .block-calendar .panel-venue {
+    margin-top: 24px;
   }
   .panel-amp {
     font-size: 26px;

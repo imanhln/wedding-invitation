@@ -183,6 +183,26 @@ export default function SectionEditor({ section, onChange }) {
             onChange={(v) => set({ lunarText: v })}
             placeholder="(Tức ngày 9 tháng 8 âm lịch)"
           />
+          <Text
+            label="Dòng dẫn nơi tổ chức tiệc"
+            value={section.venueLine}
+            onChange={(v) => set({ venueLine: v })}
+            placeholder="Tiệc cưới được tổ chức tại"
+          />
+          <Text
+            label="Nơi tổ chức tiệc"
+            value={section.venueName}
+            onChange={(v) => set({ venueName: v })}
+            placeholder="Tư gia nhà trai"
+            hint="Tên nhà hàng, hoặc “Tư gia nhà trai” nếu tiệc làm cùng chỗ với lễ thành hôn"
+          />
+          <TextArea
+            label="Địa chỉ nơi đặt tiệc"
+            rows={2}
+            value={section.addressLine}
+            onChange={(v) => set({ addressLine: v })}
+            hint="Ghi bằng chữ để khách biết đến đâu, không phải bấm nút “Mở bản đồ” mới thấy. Để trống thì ẩn."
+          />
 
           <ListEditor
             items={section.reception}
@@ -549,6 +569,13 @@ export default function SectionEditor({ section, onChange }) {
               onChange={(v) => set({ modalTitle: v })}
             />
           </div>
+          <TextArea
+            label="Dòng nhắn trong hộp QR"
+            rows={2}
+            value={section.note}
+            onChange={(v) => set({ note: v })}
+            hint="Hiện trên phần tài khoản. Để trống thì ẩn."
+          />
           <ListEditor
             items={section.accounts}
             onChange={(accounts) => set({ accounts })}

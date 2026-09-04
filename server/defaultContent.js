@@ -106,37 +106,6 @@ export const defaultContent = {
       nameLine2: "Hồng Thúy",
     },
     {
-      id: "invitation",
-      type: "invitation",
-      enabled: true,
-      panelTitle: "Thông tin lễ cưới",
-      showFamily: true,
-      groomSideLabel: "Ông Bà",
-      brideSideLabel: "Ông Bà",
-      middleNote: "Trân trọng báo tin\nlễ thành hôn của con chúng tôi",
-      venueLine: "Lễ thành hôn được tổ chức tại",
-      venuePlace: "Tư gia",
-      venueSide: "nhà trai",
-      eventDate: "2026-09-20",
-      eventTime: "13:00",
-      lunarLine: "(Tức ngày 10 tháng 8 âm lịch)",
-      addressLine: "Xã Thiệu Trung, Tỉnh Thanh Hóa",
-      footNote: "",
-    },
-    {
-      id: "gallery",
-      type: "gallery",
-      enabled: true,
-      title: "Album Ảnh",
-      subtitle: "",
-      autoPlay: true,
-      autoPlayDelay: 4, // giây giữa hai lần tự chuyển ảnh
-      photos: [
-        { id: "p1", url: "/figma/demo-1.jpg", caption: "" },
-        { id: "p2", url: "/figma/demo-cover.jpg", caption: "" },
-      ],
-    },
-    {
       id: "party",
       type: "calendar",
       enabled: true,
@@ -144,6 +113,11 @@ export const defaultContent = {
       script: "Tiệc cưới sẽ diễn ra vào lúc:",
       targetDate: "2026-09-19T16:00",
       lunarText: "(Tức ngày 9 tháng 8 âm lịch)",
+      // Nơi đặt tiệc ghi bằng chữ, để khách không phải bấm nút "Mở bản đồ"
+      // mới biết đến đâu. Tiệc làm cùng chỗ với lễ thành hôn nên trùng địa chỉ.
+      venueLine: "Tiệc cưới được tổ chức tại",
+      venueName: "Tư gia nhà trai",
+      addressLine: "Xã Thiệu Trung, Tỉnh Thanh Hóa",
       reception: [
         { id: "r1", label: "Đón khách", time: "16:00" },
         { id: "r2", label: "Khai tiệc", time: "16:30" },
@@ -212,6 +186,37 @@ export const defaultContent = {
       address: "Thieu Trung, Thanh Hoa, Vietnam",
     },
     {
+      id: "gallery",
+      type: "gallery",
+      enabled: true,
+      title: "Album Ảnh",
+      subtitle: "",
+      autoPlay: true,
+      autoPlayDelay: 4, // giây giữa hai lần tự chuyển ảnh
+      photos: [
+        { id: "p1", url: "/figma/demo-1.jpg", caption: "" },
+        { id: "p2", url: "/figma/demo-cover.jpg", caption: "" },
+      ],
+    },
+    {
+      id: "invitation",
+      type: "invitation",
+      enabled: true,
+      panelTitle: "Thông tin lễ cưới",
+      showFamily: true,
+      groomSideLabel: "Ông Bà",
+      brideSideLabel: "Ông Bà",
+      middleNote: "Trân trọng báo tin\nlễ thành hôn của con chúng tôi",
+      venueLine: "Lễ thành hôn được tổ chức tại",
+      venuePlace: "Tư gia",
+      venueSide: "nhà trai",
+      eventDate: "2026-09-20",
+      eventTime: "13:00",
+      lunarLine: "(Tức ngày 10 tháng 8 âm lịch)",
+      addressLine: "Xã Thiệu Trung, Tỉnh Thanh Hóa",
+      footNote: "",
+    },
+    {
       id: "events",
       type: "events",
       enabled: true,
@@ -259,6 +264,7 @@ export const defaultContent = {
       subtitle: "",
       buttonText: "Nhấn để mở",
       modalTitle: "Gửi mừng cưới",
+      note: "Sự hiện diện của bạn đã là món quà quý nhất với chúng mình. Phần này chỉ để tiện cho ai ở xa không tới được.",
       accounts: [
         {
           id: "g1",

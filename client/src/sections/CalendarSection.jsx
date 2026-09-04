@@ -61,6 +61,9 @@ export default function CalendarSection({ data, content }) {
 
   const timeOnly = (data.targetDate || '').slice(11, 16) || '11:00';
 
+  // "Tiệc cưới được tổ chức tại" + tên nhà hàng (bỏ trống bên nào thì mất bên đó)
+  const venueName = (data.venueName || '').trim();
+
   return (
     <section className="block block-calendar" id={data.id}>
       <Reveal anim="up" className="panel" duration={1000}>
@@ -78,6 +81,18 @@ export default function CalendarSection({ data, content }) {
         )}
 
         {data.lunarText && <p className="panel-lunar">{data.lunarText}</p>}
+
+        {/* Tên nhà hàng + địa chỉ bằng chữ: khách đọc thiệp là biết đến đâu,
+            không phải bấm vào nút "Mở bản đồ" mới ra. */}
+        {venueName && (
+          <p className="panel-venue">
+            {data.venueLine}
+            {data.venueLine && <br />}
+            {venueName}
+          </p>
+        )}
+
+        {data.addressLine && <p className="panel-venue-address">{data.addressLine}</p>}
 
         {(data.reception || []).length > 0 && (
           <div className="panel-reception">
