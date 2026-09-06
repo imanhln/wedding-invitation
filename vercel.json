@@ -20,7 +20,7 @@
     "remotePatterns": [
       {
         "protocol": "https",
-        "hostname": "REPLACE_WITH_R2_PUBLIC_HOST",
+        "hostname": "pub-625434672e9b43839d2a4de9ceab8b5e.r2.dev",
         "pathname": "^/.*$"
       }
     ]
