@@ -50,10 +50,39 @@ Cùng một repo, dựng thành **2 project Vercel**. Hai bên có nội dung ri
 quản trị riêng, mật khẩu riêng, không thấy dữ liệu của nhau. Còn code thì chung:
 sửa giao diện một lần, push một lần, cả hai site tự deploy lại.
 
-### 1. Tạo Blob store (chỉ làm 1 lần, dùng chung cho cả 2 site)
+### 1. Tạo bucket Cloudflare R2 (chỉ làm 1 lần, dùng chung cho cả 2 site)
 
-Vercel Dashboard → **Storage** → **Create Database** → **Blob** → đặt tên
-`wedding-blob`. Đây là nơi chứa nội dung thiệp, danh sách khách, lời chúc và ảnh.
+Cloudflare Dashboard → **R2 Object Storage** → **Create bucket** → đặt tên
+`wedding-storage` (tên tuỳ chọn). Đây là nơi chứa nội dung thiệp, danh sách
+khách, lời chúc và ảnh.
+
+Bật truy cập công khai để ảnh hiển thị được trên thiệp — vào bucket vừa tạo →
+**Settings → Public access**:
+- Nhanh nhất: bật **Public Development URL**, Cloudflare cho một domain dạng
+  `pub-xxxxxxxx.r2.dev`. Dùng tạm được, Cloudflare khuyến cáo không dùng lâu dài
+  cho production nhưng đủ tốt cho một trang thiệp cưới.
+- Chuẩn hơn: gắn **Custom Domain** (cần domain đã trỏ DNS qua Cloudflare), ví dụ
+  `anh.example.com`.
+
+Ghi lại domain đó — đây chính là `R2_PUBLIC_HOST` dùng ở bước sau.
+
+Tạo API token để server ghi/đọc được bucket — **R2 → Manage API tokens →
+Create API token**, quyền **Object Read & Write**, giới hạn vào đúng bucket vừa
+tạo. Cloudflare đưa các giá trị sau, ghi lại hết vì secret chỉ hiện một lần:
+
+| Biến | Lấy ở đâu |
+| --- | --- |
+| `R2_ACCOUNT_ID` | góc phải R2 Overview, hoặc trong URL dashboard |
+| `R2_ACCESS_KEY_ID` | hiện ra khi tạo API token |
+| `R2_SECRET_ACCESS_KEY` | hiện ra khi tạo API token (chỉ thấy **1 lần**, chép lại ngay) |
+| `R2_BUCKET` | tên bucket, ví dụ `wedding-storage` |
+| `R2_PUBLIC_HOST` | domain public đã bật ở trên (không kèm `https://`) |
+
+> **Site cũ đang chạy trên Vercel Blob?** Đừng xoá Blob store ngay. Thêm 5 biến
+> `R2_*` trên vào máy (file `.env` ở gốc repo, cùng với `BLOB_READ_WRITE_TOKEN`,
+> `SITE_ID`, `DATA_SECRET` cũ), rồi chạy `npm run migrate:blob-to-r2` — script tự
+> copy toàn bộ ảnh + dữ liệu sang bucket mới và viết lại URL ảnh bên trong các
+> file JSON. Xem chi tiết trong `server/scripts/migrate-blob-to-r2.mjs`.
 
 ### 2. Tạo project thứ nhất (nhà trai)
 
@@ -68,9 +97,15 @@ Vào **Settings → Environment Variables**, thêm:
 | `ADMIN_PASSWORD` | mật khẩu của chú rể |
 | `DATA_SECRET` | một chuỗi ngẫu nhiên dài |
 | `SESSION_SECRET` | một chuỗi ngẫu nhiên khác |
+| `R2_ACCOUNT_ID` | như bước 1 |
+| `R2_ACCESS_KEY_ID` | như bước 1 |
+| `R2_SECRET_ACCESS_KEY` | như bước 1 |
+| `R2_BUCKET` | như bước 1 |
+| `R2_PUBLIC_HOST` | như bước 1 |
 
-Rồi vào **Storage** của project → **Connect** cái `wedding-blob` vừa tạo.
-Bước này Vercel tự thêm biến `BLOB_READ_WRITE_TOKEN`, không phải tự gõ.
+Sửa `hostname` trong `vercel.json` (khoá `images.remotePatterns`) thành đúng
+`R2_PUBLIC_HOST` rồi commit — Vercel Image Optimization chỉ tối ưu được ảnh từ
+domain đã khai ở đây.
 
 Cuối cùng bấm **Deployments → Redeploy** để các biến có hiệu lực.
 
@@ -84,8 +119,9 @@ Làm y hệt bước 2 với **cùng repo đó**, chỉ khác:
 | `ADMIN_PASSWORD` | mật khẩu của cô dâu |
 | `DATA_SECRET` | chuỗi ngẫu nhiên **khác** với nhà trai |
 | `SESSION_SECRET` | chuỗi ngẫu nhiên **khác** với nhà trai |
+| `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` / `R2_PUBLIC_HOST` | **giống hệt** nhà trai — cùng một bucket |
 
-Nối vào **cùng** `wedding-blob`. `SITE_ID` khác nhau là đủ để hai bên tách dữ liệu.
+`SITE_ID` khác nhau là đủ để hai bên tách dữ liệu dù dùng chung bucket.
 
 Kết quả:
 
@@ -93,7 +129,7 @@ Kết quả:
 | --- | --- | --- |
 | Thiệp | `nha-trai.vercel.app` | `nha-gai.vercel.app` |
 | Quản trị | `nha-trai.vercel.app/admin` | `nha-gai.vercel.app/admin` |
-| Dữ liệu trên Blob | `nha-trai/…` | `nha-gai/…` |
+| Dữ liệu trên R2 | `nha-trai/…` | `nha-gai/…` |
 
 ### Sinh chuỗi ngẫu nhiên cho DATA_SECRET / SESSION_SECRET
 
@@ -103,14 +139,14 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 > **Đặt `DATA_SECRET` một lần rồi thôi.** Đường dẫn file dữ liệu được băm ra từ
 > nó, đổi giá trị là site không tìm thấy nội dung cũ nữa (dữ liệu vẫn còn trên
-> Blob, nhưng nằm ở đường dẫn khác).
+> R2, nhưng nằm ở đường dẫn khác).
 
 ### Những điểm khác so với chạy trên máy
 
 - **Không còn `server/data` và `server/uploads`.** Filesystem của Vercel chỉ đọc
-  và bị xoá sạch mỗi lần deploy, nên toàn bộ đã chuyển sang Vercel Blob
-  (`server/store.js`). Chạy ở máy vẫn ghi file như cũ — cứ không có
-  `BLOB_READ_WRITE_TOKEN` là tự động dùng file.
+  và bị xoá sạch mỗi lần deploy, nên toàn bộ đã chuyển sang Cloudflare R2
+  (`server/store.js`). Chạy ở máy vẫn ghi file như cũ — cứ thiếu biến `R2_*`
+  là tự động dùng file.
 - **Ảnh tự thu nhỏ về tối đa 1600px trước khi tải lên** (`shrinkImage` trong
   `client/src/api.js`). Vercel chặn request nặng quá 4.5 MB, mà ảnh điện thoại
   thường 5–12 MB. Thu nhỏ vừa lách được giới hạn, vừa làm thiệp mở nhanh hơn.
@@ -271,8 +307,8 @@ npm run music:from-youtube -- "https://youtu.be/xxxxxxxxxxx"
 Script tải audio, lưu vào đúng kho của site rồi gán luôn vào ô nhạc trong /admin. Thêm
 `--clip 15-105` để bỏ đoạn đầu, `--bitrate 96` cho file nhẹ, `--no-apply` nếu chỉ muốn
 lấy link mà chưa sửa nội dung. Ghi vào kho nào là do biến môi trường quyết định giống
-lúc chạy server: không có `BLOB_READ_WRITE_TOKEN` thì xuống `server/uploads`, có token
-thì lên Blob của site thật — khi đó nhớ đặt đúng cả `SITE_ID` và `DATA_SECRET` (để trong
+lúc chạy server: thiếu biến `R2_*` thì xuống `server/uploads`, đủ biến thì
+lên R2 của site thật — khi đó nhớ đặt đúng cả `SITE_ID` và `DATA_SECRET` (để trong
 `.env` ở gốc repo là script tự đọc). `DEFAULT_MUSIC_URL` trong `server/defaultContent.js`
 cũng đang là link YouTube, nên đổi thành link file đã tải nếu muốn bài mặc định nghe được
 ở mọi máy.

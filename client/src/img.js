@@ -16,14 +16,14 @@ const QUALITY = 75;
    biến này do vite.config.js đặt theo env VERCEL lúc build. */
 const HAS_OPTIMIZER = typeof __IMG_OPT__ !== 'undefined' && __IMG_OPT__;
 
-// Ảnh tải lên trên Vercel nằm ở Blob, tên host dạng <store>.public.blob…
-// Trùng với `remotePatterns` trong vercel.json.
-const BLOB_HOST = /(^|\.)public\.blob\.vercel-storage\.com$/i;
+// Ảnh tải lên trên Vercel nằm ở Cloudflare R2, host lấy từ R2_PUBLIC_HOST lúc
+// build (xem vite.config.js). Trùng với `remotePatterns` trong vercel.json.
+const R2_HOST = typeof __R2_PUBLIC_HOST__ !== 'undefined' ? __R2_PUBLIC_HOST__ : '';
 
 /** Ảnh này có được API tối ưu nhận không? Không thì dùng nguyên URL gốc. */
 function optimizable(url) {
   // Không có `/_vercel/image` thì mọi ảnh đều phải dùng URL gốc — kể cả ảnh
-  // trên Blob, vì chạy máy cá nhân vẫn có thể trỏ vào Blob store thật.
+  // trên R2, vì chạy máy cá nhân vẫn có thể trỏ vào R2 thật.
   if (!HAS_OPTIMIZER) return false;
 
   if (!url || typeof url !== 'string') return false;
@@ -31,8 +31,9 @@ function optimizable(url) {
   if (/\.svg(\?|#|$)/i.test(url)) return false; // dangerouslyAllowSVG: false
 
   if (/^https?:\/\//i.test(url)) {
+    if (!R2_HOST) return false;
     try {
-      return BLOB_HOST.test(new URL(url).hostname);
+      return new URL(url).hostname.toLowerCase() === R2_HOST.toLowerCase();
     } catch {
       return false;
     }

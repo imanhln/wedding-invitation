@@ -25,7 +25,7 @@ const MIME = {
 };
 
 // Ảnh tải lên khi chạy máy cá nhân có URL dạng /uploads/... (tương đối), còn
-// trên Vercel Blob thì đã là URL tuyệt đối. og:image bắt buộc phải tuyệt đối.
+// trên Cloudflare R2 thì đã là URL tuyệt đối. og:image bắt buộc phải tuyệt đối.
 const abs = (url, base) => {
   if (!url) return '';
   try {
@@ -47,7 +47,7 @@ const abs = (url, base) => {
 
 const COVER_BG_WIDTH = 1280;
 const IMG_QUALITY = 75;
-const BLOB_HOST = /(^|\.)public\.blob\.vercel-storage\.com$/i;
+const R2_HOST = (process.env.R2_PUBLIC_HOST || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
 
 function optimizedCoverUrl(url) {
   // /_vercel/image chỉ tồn tại trên bản triển khai Vercel.
@@ -55,8 +55,9 @@ function optimizedCoverUrl(url) {
   if (/^(data:|blob:)/i.test(url) || /\.svg(\?|#|$)/i.test(url)) return '';
 
   if (/^https?:\/\//i.test(url)) {
+    if (!R2_HOST) return '';
     try {
-      if (!BLOB_HOST.test(new URL(url).hostname)) return '';
+      if (new URL(url).hostname.toLowerCase() !== R2_HOST.toLowerCase()) return '';
     } catch {
       return '';
     }

@@ -10,7 +10,7 @@ import { issueToken, verifyToken } from './session.js';
 import { injectMeta, fallbackHtml } from './shareMeta.js';
 import {
   SITE_ID,
-  useBlob,
+  useRemote,
   UPLOAD_DIR,
   readJson,
   writeJson,
@@ -142,8 +142,8 @@ function auth(req, res, next) {
 const ALLOWED = /\.(jpe?g|png|webp|gif|avif|mp3|m4a|wav|ogg|svg)$/i;
 
 // Serverless function của Vercel chặn request body lớn hơn 4.5 MB, nên đặt trần
-// dưới mức đó khi chạy trên Blob. Ảnh đã được thu nhỏ sẵn ở phía trình duyệt.
-const MAX_UPLOAD = useBlob ? 4 * 1024 * 1024 : 25 * 1024 * 1024;
+// dưới mức đó khi chạy trên R2. Ảnh đã được thu nhỏ sẵn ở phía trình duyệt.
+const MAX_UPLOAD = useRemote ? 4 * 1024 * 1024 : 25 * 1024 * 1024;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -158,8 +158,8 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '4mb' }));
 
-// Chỉ cần khi chạy máy cá nhân; trên Vercel ảnh nằm trên Blob với URL tuyệt đối.
-if (!useBlob) app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d' }));
+// Chỉ cần khi chạy máy cá nhân; trên Vercel ảnh nằm trên R2 với URL tuyệt đối.
+if (!useRemote) app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d' }));
 
 /** Express 4 không bắt được lỗi của handler async — bọc lại để lỗi rơi vào error handler. */
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -167,7 +167,7 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 /* ------------------------------ Public API ------------------------------- */
 
 app.get('/api/config', (_req, res) =>
-  res.json({ site: SITE_ID, storage: useBlob ? 'blob' : 'local', maxUpload: MAX_UPLOAD })
+  res.json({ site: SITE_ID, storage: useRemote ? 'r2' : 'local', maxUpload: MAX_UPLOAD })
 );
 
 app.get('/api/content', wrap(async (_req, res) => res.json(await getContent())));

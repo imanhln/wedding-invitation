@@ -12,10 +12,11 @@
     "dev": "concurrently -n server,client -c magenta,cyan \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
     "music:from-youtube": "node server/scripts/music-from-youtube.mjs",
+    "migrate:blob-to-r2": "node server/scripts/migrate-blob-to-r2.mjs",
     "start": "node server/index.js"
   },
   "dependencies": {
-    "@vercel/blob": "^2.8.0",
+    "@aws-sdk/client-s3": "^3.1127.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "multer": "^2.2.0"

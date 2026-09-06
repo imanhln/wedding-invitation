@@ -7,7 +7,8 @@ export default defineConfig({
   // nhân, cờ này tắt để src/img.js trả ảnh gốc thay vì URL 404. Vercel đặt
   // VERCEL=1 trong môi trường build.
   define: {
-    __IMG_OPT__: JSON.stringify(Boolean(process.env.VERCEL))
+    __IMG_OPT__: JSON.stringify(Boolean(process.env.VERCEL)),
+    __R2_PUBLIC_HOST__: JSON.stringify(process.env.R2_PUBLIC_HOST || '')
   },
   server: {
     port: 5173,

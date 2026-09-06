@@ -20,7 +20,7 @@
     "remotePatterns": [
       {
         "protocol": "https",
-        "hostname": "*.public.blob.vercel-storage.com",
+        "hostname": "REPLACE_WITH_R2_PUBLIC_HOST",
         "pathname": "^/.*$"
       }
     ]

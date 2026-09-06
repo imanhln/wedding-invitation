@@ -15,9 +15,9 @@
  *   scoop install yt-dlp ffmpeg          # hoặc: pipx install yt-dlp
  *
  * Ghi vào kho nào là do biến môi trường quyết định, GIỐNG HỆT lúc chạy server:
- *   - Không có BLOB_READ_WRITE_TOKEN -> ghi xuống server/uploads (chỉ máy mình thấy).
- *   - Có token -> ghi lên Vercel Blob của site thật; nhớ đặt đúng cả SITE_ID và
- *     DATA_SECRET như trên Vercel, không thì nội dung bị ghi vào sai chỗ.
+ *   - Thiếu biến R2_* -> ghi xuống server/uploads (chỉ máy mình thấy).
+ *   - Đủ biến R2_* -> ghi lên Cloudflare R2 của site thật; nhớ đặt đúng cả SITE_ID
+ *     và DATA_SECRET như trên Vercel, không thì nội dung bị ghi vào sai chỗ.
  *   Gọn nhất là để các biến đó trong .env ở gốc repo — script tự đọc.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -29,7 +29,7 @@ import path from 'node:path';
 // Phải chạy TRƯỚC khi nạp store.js vì store.js đọc env ngay lúc import.
 try { process.loadEnvFile?.(new URL('../../.env', import.meta.url)); } catch { /* chưa có .env */ }
 
-const { saveUpload, readJson, writeJson, useBlob, SITE_ID } = await import('../store.js');
+const { saveUpload, readJson, writeJson, useRemote, SITE_ID } = await import('../store.js');
 const { defaultContent } = await import('../defaultContent.js');
 
 /* --------------------------------- Tham số -------------------------------- */
@@ -184,7 +184,7 @@ const saved = await saveUpload({
 
 console.log(`\nĐã lưu: ${saved.url}`);
 console.log(
-  `Kích thước: ${mb.toFixed(1)} MB · kho: ${useBlob ? `Vercel Blob (site "${SITE_ID}")` : 'server/uploads (chỉ máy này)'}`
+  `Kích thước: ${mb.toFixed(1)} MB · kho: ${useRemote ? `Cloudflare R2 (site "${SITE_ID}")` : 'server/uploads (chỉ máy này)'}`
 );
 if (mb > 8) {
   console.warn('File hơi nặng cho mạng 4G — nhẹ bớt bằng --bitrate 96, hoặc cắt ngắn bằng --clip 0-120.');
