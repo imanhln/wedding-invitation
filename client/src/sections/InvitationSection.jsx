@@ -25,24 +25,6 @@ export default function InvitationSection({ data, content }) {
       <Reveal anim="up" className="panel" duration={1000}>
         {data.panelTitle && <p className="panel-title">{data.panelTitle}</p>}
 
-        {data.showFamily && (
-          <div className="panel-families">
-            <div>
-              <span className="panel-side">{data.groomSideLabel}</span>
-              <b>{groom.father}</b>
-              <b>{groom.mother}</b>
-              {groom.address && <em>{groom.address}</em>}
-            </div>
-            <span className="panel-divider" aria-hidden="true" />
-            <div>
-              <span className="panel-side">{data.brideSideLabel}</span>
-              <b>{bride.father}</b>
-              <b>{bride.mother}</b>
-              {bride.address && <em>{bride.address}</em>}
-            </div>
-          </div>
-        )}
-
         {data.middleNote && <p className="panel-note">{data.middleNote}</p>}
 
         {/* Figma 17:10 — bản mới dùng tên gọi ngắn, Playfair Display 48,
@@ -90,6 +72,24 @@ export default function InvitationSection({ data, content }) {
           <p className="panel-guest">
             Kính mời: <b>{guest}</b>
           </p>
+        )}
+
+        {data.showFamily && (
+          <div className="panel-families">
+            <div>
+              <span className="panel-side">{data.groomSideLabel}</span>
+              <b>{groom.father}</b>
+              <b>{groom.mother}</b>
+              {groom.address && <em>{groom.address}</em>}
+            </div>
+            <span className="panel-divider" aria-hidden="true" />
+            <div>
+              <span className="panel-side">{data.brideSideLabel}</span>
+              <b>{bride.father}</b>
+              <b>{bride.mother}</b>
+              {bride.address && <em>{bride.address}</em>}
+            </div>
+          </div>
         )}
 
         <img
