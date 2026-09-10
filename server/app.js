@@ -175,8 +175,20 @@ app.get('/api/content', wrap(async (_req, res) => res.json(await getContent())))
 app.get(
   '/api/wishes',
   wrap(async (_req, res) => {
-    const wishes = (await readJson('wishes', [])).filter((w) => !w.hidden);
-    res.json(wishes.map(({ hidden, ...w }) => w));
+    const wishes = (await readJson('wishes', []))
+      .filter((w) => !w.hidden)
+      .map(({ hidden, ...w }) => w);
+
+    // Lời nhắn khi xác nhận tham dự cũng là một lời chúc, nên gộp luôn vào
+    // đây — gộp lúc đọc để không phải sửa dữ liệu RSVP đã có từ trước.
+    const rsvpWishes = (await readJson('rsvp', []))
+      .filter((r) => !r.hidden && String(r.message || '').trim())
+      .map((r) => ({ id: `rsvp:${r.id}`, name: r.name, message: r.message, createdAt: r.createdAt }));
+
+    const merged = [...wishes, ...rsvpWishes].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    res.json(merged);
   })
 );
 
@@ -252,21 +264,6 @@ app.post(
       createdAt: now
     });
     await writeJson('rsvp', list);
-
-    // Lời nhắn khi xác nhận tham dự cũng là một lời chúc, nên đưa luôn vào sổ
-    // lưu bút để khách không phải viết hai lần ở hai chỗ.
-    if (guestMessage.trim()) {
-      const wishes = await readJson('wishes', []);
-      wishes.unshift({
-        id: crypto.randomUUID(),
-        name: guestName,
-        message: guestMessage.trim(),
-        createdAt: now,
-        hidden: false
-      });
-      await writeJson('wishes', wishes);
-    }
-
     res.json({ ok: true });
   })
 );
