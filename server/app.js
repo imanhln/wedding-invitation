@@ -179,10 +179,16 @@ app.get(
       .filter((w) => !w.hidden)
       .map(({ hidden, ...w }) => w);
 
+    // Một bản deploy tạm thời từng ghi lời nhắn RSVP thẳng vào wishes.json —
+    // nhận diện các bản ghi đó bằng cặp tên + thời điểm tạo trùng khớp để
+    // khỏi hiện lặp khi gộp với danh sách RSVP bên dưới.
+    const legacyKeys = new Set(wishes.map((w) => `${w.name}|${w.createdAt}`));
+
     // Lời nhắn khi xác nhận tham dự cũng là một lời chúc, nên gộp luôn vào
     // đây — gộp lúc đọc để không phải sửa dữ liệu RSVP đã có từ trước.
     const rsvpWishes = (await readJson('rsvp', []))
       .filter((r) => !r.hidden && String(r.message || '').trim())
+      .filter((r) => !legacyKeys.has(`${r.name}|${r.createdAt}`))
       .map((r) => ({ id: `rsvp:${r.id}`, name: r.name, message: r.message, createdAt: r.createdAt }));
 
     const merged = [...wishes, ...rsvpWishes].sort(
