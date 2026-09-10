@@ -233,10 +233,14 @@ app.post(
       return res.status(400).json({ error: 'Vui lòng nhập số điện thoại' });
     }
 
+    const guestName = String(name).trim().slice(0, 80);
+    const guestMessage = String(message || '').slice(0, 500);
+    const now = new Date().toISOString();
+
     const list = await readJson('rsvp', []);
     list.unshift({
       id: crypto.randomUUID(),
-      name: String(name).trim().slice(0, 80),
+      name: guestName,
       phone: tel.value,
       attending: willAttend,
       guests: Number(guests) || 1,
@@ -244,10 +248,25 @@ app.post(
       pickup: String(pickup || '').slice(0, 120),
       // 'yes' = ở lại chơi, 'no' = về luôn, '' = không hỏi / khách báo bận.
       stay: willAttend && (stay === 'yes' || stay === 'no') ? stay : '',
-      message: String(message || '').slice(0, 500),
-      createdAt: new Date().toISOString()
+      message: guestMessage,
+      createdAt: now
     });
     await writeJson('rsvp', list);
+
+    // Lời nhắn khi xác nhận tham dự cũng là một lời chúc, nên đưa luôn vào sổ
+    // lưu bút để khách không phải viết hai lần ở hai chỗ.
+    if (guestMessage.trim()) {
+      const wishes = await readJson('wishes', []);
+      wishes.unshift({
+        id: crypto.randomUUID(),
+        name: guestName,
+        message: guestMessage.trim(),
+        createdAt: now,
+        hidden: false
+      });
+      await writeJson('wishes', wishes);
+    }
+
     res.json({ ok: true });
   })
 );
